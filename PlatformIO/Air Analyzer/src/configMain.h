@@ -8,3 +8,6 @@ const uint8_t pinSDA = 19;
 
 // Serial Monitor
 const uint32_t baudRate = 115200;
+
+// WiFi
+const String hostname = "Air Controller";
