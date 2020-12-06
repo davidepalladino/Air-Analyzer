@@ -11,7 +11,3 @@ const uint32_t baudRate =               115200;
 
 // WiFi
 const String nameDevice =               "Air Controller";
-
-// Database
-const int databaseTimezone =            1;
-const uint8_t databaseMinutesUpdate =   15;

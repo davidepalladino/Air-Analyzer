@@ -10,7 +10,7 @@ DatabaseManagement::DatabaseManagement(Sensor &sensor, int8_t timezone, uint8_t 
     this->datetime = new DatetimeInterval(timezone, totalMinutesUpdate);
     
     this->databaseAddress = new IPAddress(databaseIP[0], databaseIP[1], databaseIP[2], databaseIP[3]);
-    this->database = new MySQL_Connection((Client*) &client);
+    this->database = new MySQL_Connection((Client*) new WiFiClient());
 }
 
 void DatabaseManagement::begin() {

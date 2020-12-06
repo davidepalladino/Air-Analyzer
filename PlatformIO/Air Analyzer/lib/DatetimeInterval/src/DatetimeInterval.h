@@ -32,11 +32,11 @@
         uint8_t hour;
         uint8_t minute;
         uint8_t second;
-    } dateTime_t;
+    } datetime_t;
 
     class DatetimeInterval {
         public:
-            DatetimeInterval(int8_t timeZone, uint8_t totalMinuteUpdate) ;
+            DatetimeInterval(int8_t timezone, uint8_t totalMinuteUpdate);
             void begin(); 
             bool checkTime();
             uint16_t getActualYear();
@@ -47,19 +47,17 @@
             uint8_t getActualSecond();
 
         private:
-            WiFiUDP* ntpUDP;
             NTPClient* ntpClient;
-            struct tm* dateTimeTemp;
-            uint8_t hourUpdate;
-            uint8_t minuteUpdate;
-            dateTime_t actualDatetime;
-            dateTime_t nextDatetime;
+            uint8_t updateHour;
+            uint8_t updateMinute;
+            struct tm* tempDatetime;
+            datetime_t actualDatetime;
+            datetime_t nextDatetime;
 
-            void setHourUpdate(uint8_t hourUpdate);
-            void setMinuteUpdate(uint8_t minuteUpdate);
-            void setDatetimeRaw(dateTime_t* dateTime, uint32_t raw);
-            uint8_t getHourUpdate();
-            uint8_t getMinuteUpdate();
+            void setUpdateHour(uint8_t updateHour);
+            void setUpdateMinute(uint8_t updateMinute);
+            uint8_t getUpdateHour();
+            uint8_t getUpdateMinute();
             uint16_t getNextYear();
             uint8_t getNextMonth();
             uint8_t getNextDay();
@@ -67,6 +65,7 @@
             uint8_t getNextMinute();
             uint8_t getNextSecond();
             uint8_t getMaxDay(uint8_t year, uint8_t month);
+            void setDatetimeRaw(datetime_t* datetime, uint32_t raw);
             bool configActualDatetime();
             bool configNextDatetime();
     };

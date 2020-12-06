@@ -5,6 +5,10 @@
         #include <Arduino.h>
     #endif
 
+    #ifndef ESP8266WIFI_H
+        #include <ESP8266WiFi.h>
+    #endif
+
     #ifndef MYSQL_CONNECTION_H
         #include <MySQL_Connection.h>
     #endif
@@ -45,9 +49,9 @@
         private:
             Sensor &sensor;
             DatetimeInterval* datetime;
-            WiFiClient client;
             IPAddress* databaseAddress;
             MySQL_Connection* database;
+
             char* createQueryInsertRoom();
             char* createQueryInsertValues();
             void update();

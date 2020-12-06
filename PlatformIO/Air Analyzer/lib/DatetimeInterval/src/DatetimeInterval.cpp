@@ -1,12 +1,10 @@
 #include "DatetimeInterval.h"
 
 DatetimeInterval::DatetimeInterval(int8_t timezone, uint8_t totalMinuteUpdate) {
-    this->ntpUDP = new WiFiUDP();
+    this->ntpClient = new NTPClient(*new WiFiUDP(), (timezone * 3600));
 
-    this->ntpClient = new NTPClient(*this->ntpUDP, (timezone * 3600));
-
-    setHourUpdate(totalMinuteUpdate / 60);
-    setMinuteUpdate(totalMinuteUpdate - (getHourUpdate() * 60));
+    setUpdateHour(totalMinuteUpdate / 60);
+    setUpdateMinute(totalMinuteUpdate - (getUpdateHour() * 60));
 }
 
 void DatetimeInterval::begin() {
@@ -54,25 +52,25 @@ uint8_t DatetimeInterval::getActualMinute() { return this->actualDatetime.minute
 
 uint8_t DatetimeInterval::getActualSecond() { return this->actualDatetime.second; }
 
-void DatetimeInterval::setHourUpdate(uint8_t hourUpdate) { this->hourUpdate = hourUpdate; }
+void DatetimeInterval::setUpdateHour(uint8_t updateHour) { this->updateHour = updateHour; }
 
-void DatetimeInterval::setMinuteUpdate(uint8_t minuteUpdate) { this->minuteUpdate = minuteUpdate; }
+void DatetimeInterval::setUpdateMinute(uint8_t updateMinute) { this->updateMinute = updateMinute; }
 
-void DatetimeInterval::setDatetimeRaw(dateTime_t* dateTime, uint32_t raw) {
+void DatetimeInterval::setDatetimeRaw(datetime_t* dateTime, uint32_t raw) {
     time_t rawTime = raw;
-    this->dateTimeTemp = localtime(&rawTime);
+    this->tempDatetime = localtime(&rawTime);
 
-    dateTime->year = this->dateTimeTemp->tm_year + 1900;
-    dateTime->month = this->dateTimeTemp->tm_mon + 1;
-    dateTime->day = this->dateTimeTemp->tm_mday;
-    dateTime->hour = this->dateTimeTemp->tm_hour;
-    dateTime->minute = this->dateTimeTemp->tm_min;
-    dateTime->second = this->dateTimeTemp->tm_sec;
+    dateTime->year = this->tempDatetime->tm_year + 1900;
+    dateTime->month = this->tempDatetime->tm_mon + 1;
+    dateTime->day = this->tempDatetime->tm_mday;
+    dateTime->hour = this->tempDatetime->tm_hour;
+    dateTime->minute = this->tempDatetime->tm_min;
+    dateTime->second = this->tempDatetime->tm_sec;
 }
 
-uint8_t DatetimeInterval::getHourUpdate() { return this->hourUpdate; }
+uint8_t DatetimeInterval::getUpdateHour() { return this->updateHour; }
 
-uint8_t DatetimeInterval::getMinuteUpdate() { return this->minuteUpdate; }
+uint8_t DatetimeInterval::getUpdateMinute() { return this->updateMinute; }
 
 uint16_t DatetimeInterval::getNextYear() { return this->nextDatetime.year; }
 
@@ -136,13 +134,13 @@ bool DatetimeInterval::configNextDatetime() {
         uint8_t minute = getActualMinute();
         uint8_t seconds = getActualSecond();
 
-        minute += getMinuteUpdate();
+        minute += getUpdateMinute();
         if (minute > 59) {
             minute -= 60;
             hour += 1;
         }
 
-        hour += getHourUpdate();
+        hour += getUpdateHour();
         if (hour > 23) {
             hour -= 23;
             day += 1;
