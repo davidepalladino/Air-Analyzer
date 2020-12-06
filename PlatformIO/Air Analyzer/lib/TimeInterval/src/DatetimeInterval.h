@@ -21,51 +21,53 @@
         #include <time.h>
     #endif
 
+    #ifndef CONFIGWIFI_H
+        #include "..\..\..\configWiFi.h"
+    #endif
+
+    typedef struct {
+        uint16_t year;
+        uint8_t month;
+        uint8_t day;
+        uint8_t hour;
+        uint8_t minute;
+        uint8_t second;
+    } dateTime_t;
+
     class DatetimeInterval {
         public:
-            DatetimeInterval(bool solarTime, uint8_t totalMinutesUpdate);
+            DatetimeInterval(int8_t timeZone, uint8_t totalMinuteUpdate) ;
+            void begin(); 
+            bool checkTime();
             uint16_t getActualYear();
             uint8_t getActualMonth();
             uint8_t getActualDay();
-            uint8_t getActualMinutes();
-            uint8_t getActualSeconds();
-            uint8_t getActualHours();
-            void begin(); 
-            bool checkTime();
+            uint8_t getActualHour();
+            uint8_t getActualMinute();
+            uint8_t getActualSecond();
 
         private:
             WiFiUDP* ntpUDP;
             NTPClient* ntpClient;
-            struct tm* datetimeActual;
-            uint8_t hoursUpdate;
-            uint8_t minutesUpdate;
-            uint16_t actualYear;
-            uint8_t actualMonth;
-            uint8_t actualDay;
-            uint8_t actualHours;
-            uint8_t actualMinutes;
-            uint8_t actualSeconds;
-            uint8_t nextHours;
-            uint8_t nextMinutes;
-            uint8_t nextSeconds;
+            struct tm* dateTimeTemp;
+            uint8_t hourUpdate;
+            uint8_t minuteUpdate;
+            dateTime_t actualDatetime;
+            dateTime_t nextDatetime;
 
-            void setHoursUpdate(uint8_t hoursUpdate);
-            void setMinutesUpdate(uint8_t minutesUpdate);
-            void setActualYear(uint32_t actualYearRaw);
-            void setActualMonth(uint32_t actualMonthRaw);
-            void setActualDay(uint32_t actualDayRaw);
-            void setActualHours(uint8_t actualHours);
-            void setActualMinutes(uint8_t actualMinutes);
-            void setActualSeconds(uint8_t actualSeconds);
-            void setNextHours(uint8_t nextHours);
-            void setNextMinutes(uint8_t nextMinutes);
-            void setNextSeconds(uint8_t nextSeconds);
-            uint8_t getHoursUpdate();
-            uint8_t getMinutesUpdate();
-            uint8_t getNextSeconds();
-            uint8_t getNextHours();
-            uint8_t getNextMinutes();
+            void setHourUpdate(uint8_t hourUpdate);
+            void setMinuteUpdate(uint8_t minuteUpdate);
+            void setDatetimeRaw(dateTime_t* dateTime, uint32_t raw);
+            uint8_t getHourUpdate();
+            uint8_t getMinuteUpdate();
+            uint16_t getNextYear();
+            uint8_t getNextMonth();
+            uint8_t getNextDay();
+            uint8_t getNextHour();
+            uint8_t getNextMinute();
+            uint8_t getNextSecond();
+            uint8_t getMaxDay(uint8_t year, uint8_t month);
             bool configActualDatetime();
-            bool configNextTime();
+            bool configNextDatetime();
     };
 #endif

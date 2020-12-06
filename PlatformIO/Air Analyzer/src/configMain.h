@@ -1,13 +1,17 @@
 // Sensor
-const uint8_t pinSensor = 14;
-const uint8_t typeSensor = DHT22;
+const uint8_t pinSensor =               14;
+const uint8_t typeSensor =              DHT22;
 
 // OLED screen
-const uint8_t pinSCL = 20;
-const uint8_t pinSDA = 19;
+const uint8_t pinSCL =                  20;
+const uint8_t pinSDA =                  19;
 
 // Serial Monitor
-const uint32_t baudRate = 115200;
+const uint32_t baudRate =               115200;
 
 // WiFi
-const String hostname = "Air Controller";
+const String nameDevice =               "Air Controller";
+
+// Database
+const int databaseTimezone =            1;
+const uint8_t databaseMinutesUpdate =   15;

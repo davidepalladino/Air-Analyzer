@@ -17,5 +17,3 @@ CREATE TABLE `Values` (
 );
 
 ALTER TABLE `Values` ADD INDEX Data (`When`);
-
-INSERT INTO Room (ID, Nome) VALUES (5, 'Cameretta');

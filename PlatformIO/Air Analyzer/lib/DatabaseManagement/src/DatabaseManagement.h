@@ -25,8 +25,12 @@
         #include <Sensor.h>
     #endif
 
-    #ifndef CREDENTIALSDATABASE_H
-        #include "..\..\..\credentialsDatabase.h"
+    #ifndef CONFIGWIFI_H
+        #include "..\..\..\configWiFi.h"
+    #endif
+
+    #ifndef CONFIGDATABASE_H
+        #include "..\..\..\configDatabase.h"
     #endif
 
     class Sensor;
@@ -35,7 +39,7 @@
         friend class AbstractSubject;
 
         public:
-            DatabaseManagement(Sensor &sensor, bool solarTime, uint8_t totalMinutesUpdate);
+            DatabaseManagement(Sensor &sensor, int8_t timezone, uint8_t totalMinutesUpdate);
             void begin();
 
         private:
@@ -44,7 +48,8 @@
             WiFiClient client;
             IPAddress* databaseAddress;
             MySQL_Connection* database;
-            char* createQuery();
+            char* createQueryInsertRoom();
+            char* createQueryInsertValues();
             void update();
     };
 

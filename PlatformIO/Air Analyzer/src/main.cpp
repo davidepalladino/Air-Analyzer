@@ -7,25 +7,23 @@
 #include <DatabaseManagement.h>
 
 #include "configMain.h"
-#include "../credentialsWiFi.h"
+#include "../configWiFi.h"
 
 Sensor sensor(pinSensor, typeSensor);
 Screen screen(sensor, pinSCL, pinSDA);
-DatabaseManagement database(sensor, true, 5);
+DatabaseManagement database(sensor, databaseTimezone, databaseMinutesUpdate);
 
 void setup() {
   Serial.begin(baudRate);
-  Serial.flush();
   
-  // Serial debug
   WiFi.begin(wifiSSID, wifiPassword);
-  WiFi.hostname(hostname);
-  Serial.print("\nConnessione WiFi..");
+  WiFi.hostname(nameDevice + "-" + databaseRoomName);
+  Serial.print("\nConnection to WiFi..");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  Serial.print("\n\tIndirizzo IP: ");
+  Serial.print("\n\tIP address: ");
   Serial.println(WiFi.localIP());
   Serial.print("\tHostname: ");
   Serial.println(WiFi.hostname());

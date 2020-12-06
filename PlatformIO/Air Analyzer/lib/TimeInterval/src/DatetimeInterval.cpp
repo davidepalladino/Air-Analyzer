@@ -1,16 +1,12 @@
 #include "DatetimeInterval.h"
 
-DatetimeInterval::DatetimeInterval(bool solarTime, uint8_t totalMinutesUpdate) {
+DatetimeInterval::DatetimeInterval(int8_t timezone, uint8_t totalMinuteUpdate) {
     this->ntpUDP = new WiFiUDP();
 
-    if (solarTime) {
-        this->ntpClient = new NTPClient(*this->ntpUDP, 3600);
-    } else {
-        this->ntpClient = new NTPClient(*this->ntpUDP);
-    }
+    this->ntpClient = new NTPClient(*this->ntpUDP, (timezone * 3600));
 
-    setHoursUpdate(totalMinutesUpdate / 60);
-    setMinutesUpdate(totalMinutesUpdate - (getHoursUpdate() * 60));
+    setHourUpdate(totalMinuteUpdate / 60);
+    setMinuteUpdate(totalMinuteUpdate - (getHourUpdate() * 60));
 }
 
 void DatetimeInterval::begin() {
@@ -18,112 +14,110 @@ void DatetimeInterval::begin() {
 
     if (WiFi.status() == WL_CONNECTED) {
         this->ntpClient->update();
-
-        setActualYear(this->ntpClient->getEpochTime());
-        setActualMonth(this->ntpClient->getEpochTime());
-        setActualDay(this->ntpClient->getEpochTime());
-        setActualHours(this->ntpClient->getHours());
-        setActualMinutes(this->ntpClient->getMinutes());
-        setActualSeconds(this->ntpClient->getSeconds());
-
-        setNextHours(this->ntpClient->getHours());
-        setNextMinutes(this->ntpClient->getMinutes());
-        setNextSeconds(this->ntpClient->getSeconds());
+        
+        setDatetimeRaw(&this->actualDatetime, this->ntpClient->getEpochTime());
+        setDatetimeRaw(&this->nextDatetime, this->ntpClient->getEpochTime());
     } else {
         WiFi.reconnect();
     }
 }
 
 bool DatetimeInterval::checkTime() {
-    bool result = false;
-
-    if (WiFi.status() == WL_CONNECTED) {
-        this->ntpClient->update();
-
-        if (this->ntpClient->getHours() > getNextHours()) {
+    bool result = false;    
+    
+    if (configActualDatetime()) {
+        if (getActualHour() > getNextHour()) {
             result = true;
-        } else if ((this->ntpClient->getHours() == getNextHours()) && (this->ntpClient->getMinutes() > getNextMinutes())) {
+        } else if ((getActualHour() == getNextHour()) && (getActualMinute() > getNextMinute())) {
             result = true;
-        } else if ((this->ntpClient->getHours() == getNextHours()) && (this->ntpClient->getMinutes() == getNextMinutes()) && (this->ntpClient->getSeconds() > getNextSeconds())) {
+        } else if ((getActualHour() == getNextHour()) && (getActualMinute() == getNextMinute()) && (getActualSecond() > getNextSecond())) {
             result = true;
         }
-    } else {
-        WiFi.reconnect();
     }
 
     if (result) {
-        configNextTime();
+        configNextDatetime();
     }
     
     return result;
 }
 
-void DatetimeInterval::setHoursUpdate(uint8_t hoursUpdate) { this->hoursUpdate = hoursUpdate; }
+uint16_t DatetimeInterval::getActualYear() { return this->actualDatetime.year; }
 
-void DatetimeInterval::setMinutesUpdate(uint8_t minutesUpdate) { this->minutesUpdate = minutesUpdate; }
+uint8_t DatetimeInterval::getActualMonth() { return this->actualDatetime.month; }
 
-void DatetimeInterval::setActualYear(uint32_t actualYearRaw) {
-    time_t rawTime = actualYearRaw;
-    datetimeActual = localtime(&rawTime);
-    this->actualYear = (uint16_t) datetimeActual->tm_year + 1900;
+uint8_t DatetimeInterval::getActualDay() { return this->actualDatetime.day; }
+
+uint8_t DatetimeInterval::getActualHour() { return this->actualDatetime.hour; }
+
+uint8_t DatetimeInterval::getActualMinute() { return this->actualDatetime.minute; }
+
+uint8_t DatetimeInterval::getActualSecond() { return this->actualDatetime.second; }
+
+void DatetimeInterval::setHourUpdate(uint8_t hourUpdate) { this->hourUpdate = hourUpdate; }
+
+void DatetimeInterval::setMinuteUpdate(uint8_t minuteUpdate) { this->minuteUpdate = minuteUpdate; }
+
+void DatetimeInterval::setDatetimeRaw(dateTime_t* dateTime, uint32_t raw) {
+    time_t rawTime = raw;
+    this->dateTimeTemp = localtime(&rawTime);
+
+    dateTime->year = this->dateTimeTemp->tm_year + 1900;
+    dateTime->month = this->dateTimeTemp->tm_mon + 1;
+    dateTime->day = this->dateTimeTemp->tm_mday;
+    dateTime->hour = this->dateTimeTemp->tm_hour;
+    dateTime->minute = this->dateTimeTemp->tm_min;
+    dateTime->second = this->dateTimeTemp->tm_sec;
 }
 
-void DatetimeInterval::setActualMonth(uint32_t actualMonthRaw) {
-    time_t rawTime = actualMonthRaw;
-    datetimeActual = localtime(&rawTime);
-    this->actualMonth = (uint8_t) datetimeActual->tm_mon + 1;
+uint8_t DatetimeInterval::getHourUpdate() { return this->hourUpdate; }
+
+uint8_t DatetimeInterval::getMinuteUpdate() { return this->minuteUpdate; }
+
+uint16_t DatetimeInterval::getNextYear() { return this->nextDatetime.year; }
+
+uint8_t DatetimeInterval::getNextMonth() { return this->nextDatetime.month; }
+
+uint8_t DatetimeInterval::getNextDay() { return this->nextDatetime.day; }
+
+uint8_t DatetimeInterval::getNextHour() { return this->nextDatetime.hour; }
+
+uint8_t DatetimeInterval::getNextMinute() { return this->nextDatetime.minute; }
+
+uint8_t DatetimeInterval::getNextSecond() { return this->nextDatetime.second; }
+
+uint8_t DatetimeInterval::getMaxDay(uint8_t year, uint8_t month) {
+	int maxDay = 0;
+
+	switch (month) {
+	    case 4:
+	    case 6:
+	    case 9:
+	    case 11:
+	    	maxDay = 30;
+	       	break;
+
+	    case 2:
+	        maxDay = 28;
+
+	        if (year % 4 == 0)
+	        {
+	        	maxDay++;
+	        }
+	        break;
+
+	     default:
+	    	 maxDay = 31;
+	         break;
+	}
+
+	return maxDay;
 }
-
-void DatetimeInterval::setActualDay(uint32_t actualDayRaw) {
-    time_t rawTime = ntpClient->getEpochTime();
-    datetimeActual = localtime(&rawTime);
-    this->actualDay = (uint8_t) datetimeActual->tm_mday;
-}
-
-void DatetimeInterval::setActualHours(uint8_t actualHours) { this->actualHours = actualHours; }
-
-void DatetimeInterval::setActualMinutes(uint8_t actualMinutes) { this->actualMinutes = actualMinutes; }
-
-void DatetimeInterval::setActualSeconds(uint8_t actualSeconds) { this->actualSeconds = actualSeconds; }
-
-void DatetimeInterval::setNextHours(uint8_t nextHour) { this->nextHours = nextHour; }
-
-void DatetimeInterval::setNextMinutes(uint8_t nextMinutes) { this->nextMinutes = nextMinutes; }
-
-void DatetimeInterval::setNextSeconds(uint8_t nextSeconds) { this->nextSeconds = nextSeconds; }
-
-uint16_t DatetimeInterval::getActualYear() { return this->actualYear; }
-
-uint8_t DatetimeInterval::getActualMonth() { return this->actualMonth; }
-
-uint8_t DatetimeInterval::getActualDay() { return this->actualDay; }
-
-uint8_t DatetimeInterval::getHoursUpdate() { return this->hoursUpdate; }
-
-uint8_t DatetimeInterval::getMinutesUpdate() { return this->minutesUpdate; }
-
-uint8_t DatetimeInterval::getActualHours() { return this->actualHours; }
-
-uint8_t DatetimeInterval::getActualMinutes() { return this->actualMinutes; }
-
-uint8_t DatetimeInterval::getActualSeconds() { return this->actualSeconds; }
-
-uint8_t DatetimeInterval::getNextHours() { return this->nextHours; }
-
-uint8_t DatetimeInterval::getNextMinutes() { return this->nextMinutes; }
-
-uint8_t DatetimeInterval::getNextSeconds() { return this->nextSeconds; }
 
 bool DatetimeInterval::configActualDatetime() {
     if (WiFi.status() == WL_CONNECTED) {
         this->ntpClient->update();
-
-        setActualYear(this->ntpClient->getEpochTime());
-        setActualMonth(this->ntpClient->getEpochTime());
-        setActualDay(this->ntpClient->getEpochTime());
-        setActualHours(this->ntpClient->getHours());
-        setActualMinutes(this->ntpClient->getMinutes());
-        setActualSeconds(this->ntpClient->getSeconds());
+        setDatetimeRaw(&this->actualDatetime, this->ntpClient->getEpochTime());
 
         return true;
     } else {
@@ -133,26 +127,44 @@ bool DatetimeInterval::configActualDatetime() {
     }
 }
 
-bool DatetimeInterval::configNextTime() {
+bool DatetimeInterval::configNextDatetime() {
     if (configActualDatetime()) {
-        uint8_t hours = getActualHours();
-        uint8_t minutes = getActualMinutes();
-        uint8_t seconds = getActualSeconds();
+        uint16_t year = getActualYear();
+        uint8_t month = getActualMonth();
+        uint8_t day = getActualDay();
+        uint8_t hour = getActualHour();
+        uint8_t minute = getActualMinute();
+        uint8_t seconds = getActualSecond();
 
-        hours += getHoursUpdate();
-        if (hours > 23) {
-            hours -= 23;
+        minute += getMinuteUpdate();
+        if (minute > 59) {
+            minute -= 60;
+            hour += 1;
         }
 
-        minutes += getMinutesUpdate();
-        if (minutes > 59) {
-            minutes -= 60;
-            hours += 1;
+        hour += getHourUpdate();
+        if (hour > 23) {
+            hour -= 23;
+            day += 1;
         }
 
-        setNextHours(hours);
-        setNextMinutes(minutes);
-        setNextSeconds(seconds);
+        uint8_t maxDay = getMaxDay(year, month);
+        if (day > maxDay) {
+            day -= maxDay;
+            month += 1;
+        }
+
+        if (month > 12) {
+            month -= 12;
+            year += 1;
+        }
+
+        this->nextDatetime.year = year;
+        this->nextDatetime.month = month;
+        this->nextDatetime.day = day;
+        this->nextDatetime.hour = hour;
+        this->nextDatetime.minute = minute;
+        this->nextDatetime.second = seconds;
 
         return true;
     } else {
