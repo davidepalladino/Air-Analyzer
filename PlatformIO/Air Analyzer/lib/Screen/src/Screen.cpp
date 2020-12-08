@@ -29,6 +29,7 @@ void Screen::drawValues() {
     this->screen->print(sensor.getTemperature());
     this->screen->setCursor(positionValueHumidity[0], positionValueHumidity[1]);
     this->screen->print(String(sensor.getHumidity()));
+    //this->screen->print(analogRead(A0) * (5 / 1023.00) *2);
 }
 
 void Screen::drawUnits() {
