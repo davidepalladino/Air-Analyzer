@@ -11,6 +11,8 @@ DatabaseManagement::DatabaseManagement(Sensor &sensor, int8_t timezone, uint8_t 
     
     this->databaseAddress = new IPAddress(databaseIP[0], databaseIP[1], databaseIP[2], databaseIP[3]);
     this->database = new MySQL_Connection((Client*) new WiFiClient());
+
+    this->errorConnection = false;
 }
 
 void DatabaseManagement::begin() {
@@ -69,16 +71,25 @@ char* DatabaseManagement::createQueryInsertValues() {
 
 void DatabaseManagement::update() {
     if (WiFi.status() == WL_CONNECTED) {
-        if (this->datetime->checkTime()) {
-            if (this->database->connect(*databaseAddress, databasePort, (char*) databaseUsername, (char*) databasePassword)) {                
+        if (this->datetime->checkTime() || errorConnection) {            
+            if (this->database->connect(*databaseAddress, databasePort, (char*) databaseUsername, (char*) databasePassword)) {
+                Serial.println("\033[1;92m[VALUES]\033[0m");
+                Serial.print("\t\033[1;97mTEMPERATURE:   "); Serial.print(sensor.getTemperature());  Serial.println("\033[0m");
+                Serial.print("\t\033[1;97mHUMIDITY:      "); Serial.print(sensor.getHumidity()); Serial.println("\033[0m");
+
                 const char* query = createQueryInsertValues();
-                
                 MySQL_Cursor *cursorDatabase = new MySQL_Cursor(database);
                 cursorDatabase->execute(query);
                 this->database->close();
 
                 delete query;
                 delete cursorDatabase;
+
+                Serial.println("\033[1;92m---------------------------------------------------\033[0m");
+
+                this->errorConnection = false;
+            } else {
+                this->errorConnection = true;
             }
         }
     } else {

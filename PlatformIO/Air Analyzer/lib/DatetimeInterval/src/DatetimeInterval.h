@@ -1,3 +1,27 @@
+ /**
+  * @brief This library allows to manage an inteval of time between the actual (get from an NTP server) and 
+  * the next set. 
+  * Copyright (c) 2020 Davide Palladino. 
+  * All right reserved.
+  * 
+  * @author Davide Palladino
+  * @contact me@davidepalladino.com
+  * @website www.davidepalladino.com
+  * @version 1.0.1
+  * @date 16th December, 2020
+  * 
+  * This library is free software; you can redistribute it and/or
+  *  modify it under the terms of the GNU General Public
+  *  License as published by the Free Software Foundation; either
+  *  version 3.0 of the License, or (at your option) any later version
+  * 
+  * This library is distributed in the hope that it will be useful,
+  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+  *  GNU Lesser General Public License for more details.
+  * 
+  */
+
 #ifndef DATETIMEINTERVAL_H
     #define DATETIMEINTERVAL_H
 
@@ -36,14 +60,59 @@
 
     class DatetimeInterval {
         public:
+            /** 
+             * @brief This constructor creates the object setting the timezone and the minutes for every update.
+             * @param timezone Timezone is expressed in hour.
+             * @param totalMinuteUpdate Total minutes for every update.
+             * @warning The max minutes will be 240. Every value greater than this will be considered as such.
+             */
             DatetimeInterval(int8_t timezone, uint8_t totalMinuteUpdate);
+
+            /** 
+             * @brief This method initializes the NTP object.
+             */
             void begin(); 
+
+            /** 
+             * @brief This method initializes the NTP object.
+             * @return Boolean value "true" to indicate if there is a variation; else "false" value.
+             */
             bool checkTime();
+
+            /** 
+             * @brief This method gets the actual and last year read with th NTP object.
+             * @return Actual and last year read.
+             */
             uint16_t getActualYear();
+
+            /** 
+             * @brief This method gets the actual and last month read with th NTP object.
+             * @return Actual and last month read.
+             */
             uint8_t getActualMonth();
+
+            /** 
+             * @brief This method gets the actual and last day read with th NTP object.
+             * @return Actual and last day read.
+             */
             uint8_t getActualDay();
+
+            /** 
+             * @brief This method gets the actual and last hour read with th NTP object.
+             * @return Actual and last hour read.
+             */
             uint8_t getActualHour();
+
+            /** 
+             * @brief This method gets the actual and last minute read with th NTP object.
+             * @return Actual and last minute read.
+             */
             uint8_t getActualMinute();
+
+            /** 
+             * @brief This method gets the actual and last second read with th NTP object.
+             * @return Actual and last second read.
+             */
             uint8_t getActualSecond();
 
         private:
@@ -54,19 +123,29 @@
             datetime_t actualDatetime;
             datetime_t nextDatetime;
 
-            void setUpdateHour(uint8_t updateHour);
-            void setUpdateMinute(uint8_t updateMinute);
-            uint8_t getUpdateHour();
-            uint8_t getUpdateMinute();
-            uint16_t getNextYear();
-            uint8_t getNextMonth();
-            uint8_t getNextDay();
-            uint8_t getNextHour();
-            uint8_t getNextMinute();
-            uint8_t getNextSecond();
+            /** 
+             * @brief This method translates a raw format to datetime_t format.
+             * @param datetime Variable where will be transfered the converted datetime.
+             * @param raw Raw format of datetime.
+             */
+            void translateDatetime(datetime_t* datetime, uint32_t raw);
+
+            /** 
+             * @brief This method gets the max day considering the year and the month.
+             * @param datetime Year to consider.
+             * @param raw Month to consider.
+             */
             uint8_t getMaxDay(uint8_t year, uint8_t month);
-            void setDatetimeRaw(datetime_t* datetime, uint32_t raw);
+
+            /** 
+             * @brief This method configs the actual datetime with the NTP object.
+             * @return Boolean value "false" to indicate if there is an error with the connection; else "false" value.
+             */
             bool configActualDatetime();
-            bool configNextDatetime();
+
+            /** 
+             * @brief This method configs the next datetime, based on the "updateHour" and "updateMinute".
+             */
+            void configNextDatetime();
     };
 #endif

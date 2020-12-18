@@ -9,34 +9,8 @@ Sensor::Sensor(uint8_t pin, uint8_t type) {
 void Sensor::begin() { sensor->begin(); }
 
 bool Sensor::check() {
-    if(setTemperature(sensor->readTemperature()) || setHumidity(sensor->readHumidity())) {
+    if(checkTemperature(sensor->readTemperature()) || checkHumidity(sensor->readHumidity())) {
         notify();
-        return true;
-    } else {
-        return false;
-    }
-}
-
-void Sensor::addObserver(AbstractObserver* observer) {
-    this->observers.push_back(observer);
-}
-
-void Sensor::removeObserver(AbstractObserver* observer) {
-    this->observers.remove(observer);
-}
-
-bool Sensor::setTemperature(float temperature) {
-    if (getTemperature() != temperature) {
-        this->temperature = temperature;
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool Sensor::setHumidity(float humidity) {
-    if (getHumidity() != humidity) {
-        this->humidity = humidity;
         return true;
     } else {
         return false;
@@ -46,6 +20,28 @@ bool Sensor::setHumidity(float humidity) {
 float Sensor::getTemperature() { return this->temperature; }
 
 float Sensor::getHumidity() { return this->humidity; }
+
+bool Sensor::checkTemperature(float temperature) {
+    if (getTemperature() != temperature) {
+        this->temperature = temperature;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool Sensor::checkHumidity(float humidity) {
+    if (getHumidity() != humidity) {
+        this->humidity = humidity;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void Sensor::addObserver(AbstractObserver* observer) { this->observers.push_back(observer); }
+
+void Sensor::removeObserver(AbstractObserver* observer) { this->observers.remove(observer); }
 
 void Sensor::notify() {
     std::list<AbstractObserver* >::iterator iteratorObservers = this->observers.begin();

@@ -9,15 +9,6 @@ void Screen::begin() {
     this->screen->begin();
 }
 
-void Screen::update() {
-    this->screen->firstPage();
-    do {
-        drawIcons();
-        drawValues();
-        drawUnits();
-    } while (this->screen->nextPage());
-}
-
 void Screen::drawIcons() {
     this->screen->drawXBMP(positionLogoTemperature[0], positionLogoTemperature[1], logoTemperatureWidth, logoTemperatureHeight, logoTemperature);
     this->screen->drawXBMP(positionLogoHumidity[0], positionLogoHumidity[1], logoHumidityWidth, logoHumidityHeight, logoHumidity);
@@ -37,4 +28,13 @@ void Screen::drawUnits() {
     this->screen->print(String((char) 176) + "C");
     this->screen->setCursor(positionUnitHumidity[0], positionUnitHumidity[1]);
     this->screen->print(" %");
+}
+
+void Screen::update() {
+    this->screen->firstPage();
+    do {
+        drawIcons();
+        drawValues();
+        drawUnits();
+    } while (this->screen->nextPage());
 }

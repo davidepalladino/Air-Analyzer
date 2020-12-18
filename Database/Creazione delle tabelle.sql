@@ -1,5 +1,6 @@
 USE airanalyzer;
 
+/* Creating the two table to store the room and the respective values. */
 CREATE TABLE Room (
     ID INT PRIMARY KEY,
     Nome VARCHAR(25) NOT NULL
@@ -16,4 +17,5 @@ CREATE TABLE `Values` (
         PRIMARY KEY(`When`, Room)
 );
 
+/* Indexing the table of values to improve the performance. */
 ALTER TABLE `Values` ADD INDEX Data (`When`);
