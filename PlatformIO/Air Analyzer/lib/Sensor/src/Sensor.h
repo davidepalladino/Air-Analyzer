@@ -8,7 +8,7 @@
   * @author Davide Palladino
   * @contact me@davidepalladino.com
   * @website www.davidepalladino.com
-  * @version 1.0.0
+  * @version 1.0.1
   * @date 13th December, 2020
   * 
   * This library is free software; you can redistribute it and/or

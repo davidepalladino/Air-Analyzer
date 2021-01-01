@@ -9,10 +9,13 @@ Sensor::Sensor(uint8_t pin, uint8_t type) {
 void Sensor::begin() { sensor->begin(); }
 
 bool Sensor::check() {
-    if(checkTemperature(sensor->readTemperature()) || checkHumidity(sensor->readHumidity())) {
+    if ((checkTemperature(sensor->readTemperature()) || checkHumidity(sensor->readHumidity())) && ((getTemperature() > 0) && (getHumidity() > 0))) {
         notify();
         return true;
     } else {
+        if (getTemperature() < 1 || getHumidity() < 1) {
+            Serial.println("\033[1;91m[ERROR VALUE READ]\033[0m");
+        }
         return false;
     }
 }

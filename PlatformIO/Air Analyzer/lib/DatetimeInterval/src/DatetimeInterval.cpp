@@ -3,8 +3,8 @@
 DatetimeInterval::DatetimeInterval(int8_t timezone, uint8_t totalMinuteUpdate) {
     this->ntpClient = new NTPClient(*new WiFiUDP(), (timezone * 3600));
 
-    if (totalMinutesUpdate > 240) {
-        totalMinutesUpdate = 240;
+    if (totalMinuteUpdate > 240) {
+        totalMinuteUpdate = 240;
     }
 
     this->updateHour = totalMinuteUpdate / 60;
