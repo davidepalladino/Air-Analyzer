@@ -23,6 +23,7 @@ void DatetimeInterval::begin() {
             Serial.println("\033[1;91m[ERROR NTP]\033[0m");
         }
     } else {
+        Serial.println("\033[1;91m[ERROR WiFi]\033[0m");
         WiFi.reconnect();
     }
 }
@@ -131,6 +132,7 @@ bool DatetimeInterval::configActualDatetime() {
             return false;
         }
     } else {
+        Serial.println("\033[1;91m[ERROR WiFi]\033[0m");
         WiFi.reconnect();
         return false;
     }

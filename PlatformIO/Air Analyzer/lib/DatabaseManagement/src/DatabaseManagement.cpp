@@ -93,6 +93,7 @@ void DatabaseManagement::update() {
             }
         }
     } else {
+        Serial.println("\033[1;91m[ERROR WiFi]\033[0m");
         WiFi.reconnect();
     }
 }
