@@ -10,7 +10,7 @@ For this project I'm using this components:
 * Push button
 
 ## Changelog
-See the [Changelog](/releases) page for details about the versions.
+See the [Releases](https://github.com/davidepalladino/Air-Analyzer/releases) page for details about the versions.
 
 ## Contribute
 Your contribute is important for me. Don't hesitate with issues and pull requests for improving this project.
