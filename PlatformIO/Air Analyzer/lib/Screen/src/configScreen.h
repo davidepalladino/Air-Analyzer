@@ -1,9 +1,18 @@
-const uint8_t positionLogoTemperature[2] =      {16, 0};        // x, y
-const uint8_t positionLogoHumidity[2] =         {16, 18};       // x, y
-const uint8_t positionValueTemperature[2] =     {34, 12};       // x, y
-const uint8_t positionValueHumidity[2] =        {34, 30};       // x, y
-const uint8_t positionUnitTemperature[2] =      {84, 12};       // x, y
-const uint8_t positionUnitHumidity[2] =         {84, 30};       // x, y
+const uint8_t positionLogoTemperature[2] =      {12, 0};        // x, y
+const uint8_t positionLogoHumidity[2] =         {12, 18};       // x, y
+const uint8_t positionLogoWiFi[2] =             {120, 32};      // x, y
+const uint8_t positionLogoError[2] =            {110, 32};      // x, y
+const uint8_t positionValueTemperature[2] =     {30, 12};       // x, y
+const uint8_t positionValueHumidity[2] =        {30, 30};       // x, y
+const uint8_t positionValueRoomID[3] =          {108, 106, 15}; // x, y
+const uint8_t positionUnitTemperature[2] =      {68, 12};       // x, y
+const uint8_t positionUnitHumidity[2] =         {68, 30};       // x, y
+const uint8_t positionFrameLoadingPage[2] =     {10, 10};       // x, y
+const uint8_t positionCircleRoomID[2] =         {110, 10};      // x, y
+const uint8_t positionMessageLoadingPage[2] =   {10, 28};       // x, y
+const uint8_t positionMessageMessagePage[2] =   {10, 20};       // x, y
+const uint8_t sizeFrameLoadingPage[2] =         {108, 5};       // width, height
+const uint8_t radiusCircleRoomID =              10;
 
 const uint8_t logoTemperatureWidth =            14;
 const uint8_t logoTemperatureHeight =           14;

@@ -14,17 +14,12 @@ DatetimeInterval::DatetimeInterval(int8_t timezone, uint8_t totalMinuteUpdate) {
 void DatetimeInterval::begin() {
     this->ntpClient->begin();
 
-    if (WiFi.status() == WL_CONNECTED) {
-        if (this->ntpClient->update()) {
-            translateDatetime(&this->actualDatetime, this->ntpClient->getEpochTime());
-            translateDatetime(&this->nextDatetime, this->ntpClient->getEpochTime());
+    if (this->ntpClient->update()) {
+        translateDatetime(&this->actualDatetime, this->ntpClient->getEpochTime());
+        translateDatetime(&this->nextDatetime, this->ntpClient->getEpochTime());
 
-        } else {
-            Serial.println("\033[1;91m[ERROR NTP]\033[0m");
-        }
     } else {
-        Serial.println("\033[1;91m[ERROR WiFi]\033[0m");
-        WiFi.reconnect();
+        Serial.println("\033[1;91m[ERROR NTP]\033[0m");
     }
 }
 
@@ -55,16 +50,6 @@ bool DatetimeInterval::checkTime() {
                 }
             }
         }
-    }
-
-    if (result) {
-        configNextDatetime();
-        Serial.println("\033[1;92m------------------ [TRANSACTION] ------------------\033[0m");
-        Serial.println("\033[1;92m[TIME]\033[0m");
-        Serial.print("\t\033[1;97mACTUAL: "); Serial.print(getActualYear()); Serial.print("-"); Serial.print(getActualMonth()); Serial.print("-"); Serial.print(getActualDay()); Serial.print(" "); 
-            Serial.print(getActualHour()); Serial.print(":"); Serial.print(getActualMinute()); Serial.print(":"); Serial.print(getActualSecond()); Serial.println("\033[0m");
-        Serial.print("\t\033[1;97mNEXT:   "); Serial.print(this->nextDatetime.year); Serial.print("-"); Serial.print(this->nextDatetime.month); Serial.print("-"); Serial.print(this->nextDatetime.day); Serial.print(" ");
-            Serial.print(this->nextDatetime.hour); Serial.print(":"); Serial.print(this->nextDatetime.minute); Serial.print(":"); Serial.print(this->nextDatetime.second);  Serial.println("\033[0m");
     }
     
     return result;
@@ -132,8 +117,7 @@ bool DatetimeInterval::configActualDatetime() {
             return false;
         }
     } else {
-        Serial.println("\033[1;91m[ERROR WiFi]\033[0m");
-        WiFi.reconnect();
+        Serial.println("\033[1;91m[ERROR WIFI FROM DatetimeInterval]\033[0m");
         return false;
     }
 }
@@ -175,4 +159,11 @@ void DatetimeInterval::configNextDatetime() {
     this->nextDatetime.hour = hour;
     this->nextDatetime.minute = minute;
     this->nextDatetime.second = seconds;
+
+    Serial.println("\033[1;92m[TIME]\033[0m");
+    Serial.print("\t\033[1;97mACTUAL: "); Serial.print(getActualYear()); Serial.print("-"); Serial.print(getActualMonth()); Serial.print("-"); Serial.print(getActualDay()); Serial.print(" "); 
+        Serial.print(getActualHour()); Serial.print(":"); Serial.print(getActualMinute()); Serial.print(":"); Serial.print(getActualSecond()); Serial.println("\033[0m");
+    Serial.print("\t\033[1;97mNEXT:   "); Serial.print(this->nextDatetime.year); Serial.print("-"); Serial.print(this->nextDatetime.month); Serial.print("-"); Serial.print(this->nextDatetime.day); Serial.print(" ");
+        Serial.print(this->nextDatetime.hour); Serial.print(":"); Serial.print(this->nextDatetime.minute); Serial.print(":"); Serial.print(this->nextDatetime.second);  Serial.println("\033[0m");
+    Serial.println("\033[1;92m---------------------------------------------------\033[0m");
 }

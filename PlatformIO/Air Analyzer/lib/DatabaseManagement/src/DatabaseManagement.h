@@ -7,8 +7,8 @@
   * @author Davide Palladino
   * @contact me@davidepalladino.com
   * @website www.davidepalladino.com
-  * @version 1.0.0
-  * @date 18th December, 2020
+  * @version 1.1.0
+  * @date 21th January, 2021
   * 
   * This library is free software; you can redistribute it and/or
   *  modify it under the terms of the GNU General Public
@@ -53,13 +53,12 @@
         #include <Sensor.h>
     #endif
 
-    #ifndef CONFIGWIFI_H
-        #include "..\..\..\configWiFi.h"
-    #endif
-
     #ifndef CONFIGDATABASE_H
         #include "..\..\..\configDatabase.h"
     #endif
+
+    /* Type of query to indicate to "executeQuery" method. */
+    typedef enum queryType : uint8_t {DM_ROOM, DM_VALUES} queryType_t;
 
     class Sensor;
 
@@ -80,12 +79,38 @@
              */
             void begin();
 
+            /**
+             * @brief This method sets the room ID.
+             * @param roomID Number of room.
+             */
+            void setRoomID(uint8_t roomID);
+
+            /**
+             * @brief This method gets the room ID.
+             * @return Number of room.
+             */
+            uint8_t getRoomID();
+
+            /**
+             * @brief This method gets the status indicator about the error on update.
+             * @return Value "true" if there is an error during update; else, value "false".
+             */
+            bool getIsErrorUpdate();
+
+            /**
+             * @brief This method exetutes a specific query, between adding of room and adding of values.
+             * @param queryType Value between "DM_ROOM" and "DM_VALUES".
+             * @return Value "false" if there is an error during the execution; else, value "true".  
+             */
+            bool executeQuery(queryType_t queryType);
+
         private:
             Sensor &sensor;
             DatetimeInterval* datetime;
             IPAddress* databaseAddress;
             MySQL_Connection* database;
-            bool errorConnection;
+            uint8_t roomID;
+            bool isErrorUpdate;
 
             /**
              * @brief This method creates the query to insert the room of this sensor into database.
@@ -102,7 +127,7 @@
             char* createQueryInsertValues();
 
              /** 
-             * @brief This method insert the acntual values into database.
+             * @brief This method insert the actual values into database.
              */
             void update();
     };

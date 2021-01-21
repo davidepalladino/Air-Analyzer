@@ -3,7 +3,7 @@ USE airanalyzer;
 /* Creating the two table to store the room and the respective values. */
 CREATE TABLE Room (
     ID INT PRIMARY KEY,
-    Nome VARCHAR(25) NOT NULL
+    Nome VARCHAR(25)
 );
 
 CREATE TABLE `Values` (

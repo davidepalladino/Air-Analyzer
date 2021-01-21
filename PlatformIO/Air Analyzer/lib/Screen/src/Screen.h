@@ -7,8 +7,8 @@
   * @author Davide Palladino
   * @contact me@davidepalladino.com
   * @website www.davidepalladino.com
-  * @version 1.0.0
-  * @date 16th December, 2020
+  * @version 1.1.0
+  * @date 21th January, 2021
   * 
   * This library is free software; you can redistribute it and/or
   *  modify it under the terms of the GNU General Public
@@ -69,9 +69,95 @@
              */
             void begin();
 
+            /**
+             * @brief This method sets the room ID.
+             * @param roomID Number of room.
+             */
+            void setRoomID(uint8_t roomID);
+
+            /**
+             * @brief This method sets the status indicator about the WiFi connection.
+             * @param isConnectedWiFi Value "true" if Wifi is connected; else, value "false".
+             */
+            void setIsConnectedWiFi(bool isConnectedWiFi);
+
+            /**
+             * @brief This method gets the status indicator about the WiFi connection.
+             * @return Value "true" if Wifi is connected; else, value "false".
+             */
+            bool getIsConnectedWiFi();
+
+            /**
+             * @brief This method sets the status indicator about the error on update.
+             * @param isConnectedWiFi Value "true" if there is an error during update; else, value "false".
+             */
+            void setIsErrorUpdate(bool isErrorUpdate);
+
+            /**
+             * @brief This method gets the status indicator about the error on update.
+             * @return Value "true" if there is an error during update; else, value "false".
+             */
+            bool getIsErrorUpdate();
+
+            /**
+             * @brief This method shows a page with an loading bar and a description message.
+             * @param message The specific message to visualize.
+             * @param percentage Percentage to fill the loading bar.
+             */
+            void showLoadingPage(String message, float percentage);
+
+            /**
+             * @brief This method shows the main page using the sensor object (to visualize the values) the room ID
+             *  and the status of connection and update.
+             */
+            void showMainPage();
+
+            /**
+             * @brief This method shows a simple page with a simple row of message at the center.
+             * @param message The specific row message to visualize.
+             * @warning The row of message shall be of maximum 18 character. Other characters may be lost at right of screen.
+             */
+            void showMessagePage(String message);
+
+            /**
+             * @brief This method shows a simple page with two simple rows of messages at the center.
+             * @param messageOne The first row of message to visualize.
+             * @param messageTwo The second row of message to visualize.
+             * @warning The single row of message shall be of maximum 18 character. Other characters may be lost at right of screen.
+             */
+            void showMessagePage(String messageOne, String messageTwo);
+
         private:
             U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C* screen;
             Sensor &sensor;
+            uint8_t roomID;
+            bool isConnectedWiFi;
+            bool isErrorUpdate;
+
+            /** 
+             * @brief This method draws the bar and the internal fill considering the percenage.
+             * @param percentage Percentage to fill the loading bar.
+             */
+            void drawBar(float percentage);
+
+            /**
+             * @brief This method draws the single message considering the "x" and "y" positions.
+             * @param positionX X position.
+             * @param positionY Y position.
+             * @param message The specific row message to visualize.
+             * @warning The row of message shall be of maximum 18 character. Other characters may be lost at right of screen.
+             */
+            void drawMessage(uint8_t positionX, uint8_t positionY, String message);
+
+            /**
+             * @brief This method draws the single message considering the "x" and "y" positions.
+             * @param positionX X position.
+             * @param positionY Y position.
+             * @param messageOne The first row of message to visualize.
+             * @param messageTwo The second row of message to visualize.
+             * @warning The single row of message shall be of maximum 18 character. Other characters may be lost at right of screen.
+             */
+            void drawMessage(uint8_t positionX, uint8_t positionY, String messageOne, String messageTwo);
 
             /** 
              * @brief This method draws the icons of temperature and humidity.
@@ -89,7 +175,7 @@
             void drawUnits();
 
             /** 
-             * @brief This method shows the actual values, using the "draw" methods.
+             * @brief This method update the main screen.
              */
             void update();
     };

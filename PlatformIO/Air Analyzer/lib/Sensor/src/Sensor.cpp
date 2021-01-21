@@ -1,30 +1,82 @@
 #include "Sensor.h"
 
 Sensor::Sensor(uint8_t pin, uint8_t type) {
-    sensor = new DHT(pin, type);
+    sensorDHT = new DHT(pin, type);
+    sensorHDC = NULL;
+
+    temperature = 0;
+    humidity = 0;
+
+    endTimeoutHDC = 0;
+}
+
+Sensor::Sensor(uint8_t address, HDC1080_MeasurementResolution humidityResolution, HDC1080_MeasurementResolution temperatureResolution) {
+    sensorDHT = NULL;
+    sensorHDC = new ClosedCube_HDC1080();
+
+    this->address = address;
+    this->humidityResolution = humidityResolution;
+    this->temperatureResolution = temperatureResolution;
+
     temperature = 0;
     humidity = 0;
 }
 
-void Sensor::begin() { sensor->begin(); }
+void Sensor::begin() { 
+    if (sensorDHT != NULL) {
+        sensorDHT->begin();
+    } else if (sensorHDC != NULL) {
+        sensorHDC->begin(address);
+        sensorHDC->setResolution(humidityResolution, temperatureResolution);
+    }
+}
 
 bool Sensor::check() {
-    if ((checkTemperature(sensor->readTemperature()) || checkHumidity(sensor->readHumidity())) && ((getTemperature() > 0) && (getHumidity() > 0))) {
-        notify();
-        return true;
-    } else {
-        if (getTemperature() < 1 || getHumidity() < 1) {
-            Serial.println("\033[1;91m[ERROR VALUE READ]\033[0m");
+    bool changed = false;
+
+    if (sensorDHT != NULL) {
+        if (checkTemperature(sensorDHT->readTemperature()) || checkHumidity(sensorDHT->readHumidity())) {
+            changed = true;
+        } else {
+            changed = false;
         }
+    } else if (sensorHDC != NULL) {
+        /* 
+         * There is a case where "timeout" will go to overflow and the result of "millis()" not. 
+         * In this case the sensor will be read every time until the result of "millis()" will go to overflow, too. 
+         */
+        if ((long) (endTimeoutHDC - millis()) <= 0) {
+            endTimeoutHDC = millis() + TIMEOUT_READ_HDC;
+
+            if (checkTemperature(sensorHDC->readTemperature()) || checkHumidity(sensorHDC->readHumidity())) {
+                changed = true;
+            } else {
+                changed = false;
+            }
+
+        } else {
+            changed = false;
+        }
+    }
+
+    if (changed) {
+        if ((getTemperature() > 0) && (getHumidity() > 0) && (getTemperature() < 125) && (getHumidity() < 100)) {
+            notify();
+            return true;
+        } else {
+            Serial.println("\033[1;91m[ERROR VALUE READ]\033[0m");
+            return false;
+        }
+    } else {
         return false;
     }
 }
 
-float Sensor::getTemperature() { return this->temperature; }
+double Sensor::getTemperature() { return this->temperature; }
 
-float Sensor::getHumidity() { return this->humidity; }
+double Sensor::getHumidity() { return this->humidity; }
 
-bool Sensor::checkTemperature(float temperature) {
+bool Sensor::checkTemperature(double temperature) {
     if (getTemperature() != temperature) {
         this->temperature = temperature;
         return true;
@@ -33,7 +85,7 @@ bool Sensor::checkTemperature(float temperature) {
     }
 }
 
-bool Sensor::checkHumidity(float humidity) {
+bool Sensor::checkHumidity(double humidity) {
     if (getHumidity() != humidity) {
         this->humidity = humidity;
         return true;

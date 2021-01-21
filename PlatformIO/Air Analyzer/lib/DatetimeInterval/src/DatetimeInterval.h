@@ -7,8 +7,8 @@
   * @author Davide Palladino
   * @contact me@davidepalladino.com
   * @website www.davidepalladino.com
-  * @version 1.0.1
-  * @date 16th December, 2020
+  * @version 1.0.2
+  * @date 21th January, 2021
   * 
   * This library is free software; you can redistribute it and/or
   *  modify it under the terms of the GNU General Public
@@ -45,10 +45,6 @@
         #include <time.h>
     #endif
 
-    #ifndef CONFIGWIFI_H
-        #include "..\..\..\configWiFi.h"
-    #endif
-
     typedef struct {
         uint16_t year;
         uint8_t month;
@@ -59,6 +55,8 @@
     } datetime_t;
 
     class DatetimeInterval {
+        friend class DatabaseManagement;
+
         public:
             /** 
              * @brief This constructor creates the object setting the timezone and the minutes for every update.

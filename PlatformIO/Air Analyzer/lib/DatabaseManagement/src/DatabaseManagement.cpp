@@ -12,32 +12,25 @@ DatabaseManagement::DatabaseManagement(Sensor &sensor, int8_t timezone, uint8_t 
     this->databaseAddress = new IPAddress(databaseIP[0], databaseIP[1], databaseIP[2], databaseIP[3]);
     this->database = new MySQL_Connection((Client*) new WiFiClient());
 
-    this->errorConnection = false;
+    this->roomID = 0;
+
+    this->isErrorUpdate = false;
 }
 
 void DatabaseManagement::begin() {
     this->datetime->begin();
-
-    while (WiFi.status() != WL_CONNECTED) {
-        WiFi.reconnect();
-    }
-    
-    if (this->database->connect(*databaseAddress, databasePort, (char*) databaseUsername, (char*) databasePassword)) {
-        const char* query = createQueryInsertRoom();
-        
-        MySQL_Cursor *cursorDatabase = new MySQL_Cursor(database);
-        cursorDatabase->execute(query);
-        this->database->close();
-
-        delete query;
-        delete cursorDatabase;
-    }
+    //executeQuery(DM_ROOM);
 }
 
+void DatabaseManagement::setRoomID(uint8_t roomID) { this->roomID = roomID; }
+
+uint8_t DatabaseManagement::getRoomID() { return this->roomID; }
+
+bool DatabaseManagement::getIsErrorUpdate() { return this->isErrorUpdate; }
+
 char* DatabaseManagement::createQueryInsertRoom() {
-    String queryString = "INSERT INTO airanalyzer.Room (ID, Nome) VALUES (" + 
-                    String(databaseRoomID) + ", '" +
-                    databaseRoomName  + "')";
+    String queryString = "INSERT INTO airanalyzer.Room (ID) VALUES (" + 
+                    String(this->roomID) + ")";
 
     uint8_t sizeQuery = queryString.length() + 1;
     char* queryChar = new char[sizeQuery];
@@ -57,7 +50,7 @@ char* DatabaseManagement::createQueryInsertValues() {
                     String(this->datetime->getActualMinute()) + ":" +
                     String(this->datetime->getActualSecond()) + "', " +
 
-                    String(databaseRoomID) + ", " +
+                    String(roomID) + ", " +
                     
                     String(this->sensor.getTemperature())  + ", " +
                     String(this->sensor.getHumidity())  + ")";
@@ -69,31 +62,52 @@ char* DatabaseManagement::createQueryInsertValues() {
     return queryChar;
 }
 
-void DatabaseManagement::update() {
+bool DatabaseManagement::executeQuery(queryType_t queryType) {
     if (WiFi.status() == WL_CONNECTED) {
-        if (this->datetime->checkTime() || errorConnection) {            
-            if (this->database->connect(*databaseAddress, databasePort, (char*) databaseUsername, (char*) databasePassword)) {
-                Serial.println("\033[1;92m[VALUES]\033[0m");
-                Serial.print("\t\033[1;97mTEMPERATURE:   "); Serial.print(sensor.getTemperature());  Serial.println("\033[0m");
-                Serial.print("\t\033[1;97mHUMIDITY:      "); Serial.print(sensor.getHumidity()); Serial.println("\033[0m");
-
-                const char* query = createQueryInsertValues();
-                MySQL_Cursor *cursorDatabase = new MySQL_Cursor(database);
-                cursorDatabase->execute(query);
-                this->database->close();
-
-                delete query;
-                delete cursorDatabase;
-
-                Serial.println("\033[1;92m---------------------------------------------------\033[0m");
-
-                this->errorConnection = false;
-            } else {
-                this->errorConnection = true;
+        if (this->database->connect(*databaseAddress, databasePort, (char*) databaseUsername, (char*) databasePassword)) {
+            char* query;
+            switch (queryType) {
+                case DM_ROOM:
+                    query = createQueryInsertRoom();
+                    break;
+                case DM_VALUES:
+                    query = createQueryInsertValues();
+                    break;
             }
+            
+            MySQL_Cursor *cursorDatabase = new MySQL_Cursor(database);
+            cursorDatabase->execute(query);
+            this->database->close();
+
+            delete query;
+            delete cursorDatabase;
+
+            this->isErrorUpdate = false;
+            return true;
+        } else {
+            Serial.println("\033[1;91m[ERROR DATABASE]\033[0m");
+
+            this->isErrorUpdate = true;
+            return false;
         }
+    } else if (WiFi.status() == WL_DISCONNECTED) {
+        Serial.println("\033[1;91m[ERROR WIFI FROM DatabaseManagement]\033[0m");
+
+        this->isErrorUpdate = true;
+        return false;
     } else {
-        Serial.println("\033[1;91m[ERROR WiFi]\033[0m");
-        WiFi.reconnect();
+        this->isErrorUpdate = true;
+        return false;
+    }
+}
+
+void DatabaseManagement::update() {
+    if ((this->datetime->checkTime() || isErrorUpdate) && executeQuery(DM_VALUES)) {            
+        Serial.println("\033[1;92m------------------ [TRANSACTION] ------------------\033[0m");
+        Serial.println("\033[1;92m[VALUES]\033[0m");
+        Serial.print("\t\033[1;97mTEMPERATURE:   "); Serial.print(sensor.getTemperature());  Serial.println("\033[0m");
+        Serial.print("\t\033[1;97mHUMIDITY:      "); Serial.print(sensor.getHumidity()); Serial.println("\033[0m");
+
+        datetime->configNextDatetime();
     }
 }
