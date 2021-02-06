@@ -1,3 +1,9 @@
+// Versions
+const String versionFirmware =                                      "1.2.0";
+const uint8_t versionEEPROM =                                       1;
+
+#pragma once
+
 // Serial Monitor
 const uint32_t baudRate =                                           115200;
 
@@ -21,13 +27,15 @@ const HDC1080_MeasurementResolution temperatureResolution =         HDC1080_RESO
 // OLED screen
 const uint8_t pinSCL =                                              20;
 const uint8_t pinSDA =                                              19;
-const uint8_t nLoadingMessages =                                    5;
 const uint16_t timeoutLoadingMessage =                              3000;
-const String loadingPageTexts[nLoadingMessages] =                   {"GETTING EEPROM", "CONNECTING WIFI", "SETTING DATABASE", "SETTING SENSOR", "SETTING SCREEN"};
-const String messagePageSearchingTexts =                            {"WPS CONNECTION..."};
-const String messagePageSuccessfulTexts =                           {"NEW CONNECTION IS:"};
-const String messagePageErrorTexts[2] =                             {"NO NEW CONNECTION", "REVEALED!"};
-const uint16_t timeoutMessage =                                     3000;
+const String installationRoomIDPageMessages[3] =                    {"Short press to", "change the ID. ", "Long press to finish."};
+const String installationRoomWiFiPageMessages[6] =                  {"Search error, no", "connection revealed.", "Try again!", "Short press to start", "WPS connection.", "Searching..."};
+const String loadingPageMessages[5] =                               {"GETTING EEPROM", "CONNECTING WIFI", "SETTING DATABASE", "SETTING SENSOR", "SETTING SCREEN"};
+const String messagePageInstallationCompleteMessages[2] =           {"INSTALLATION", "COMPLETE"};
+const String messagePageSearchingMessage =                          {"WPS CONNECTION..."};
+const String messagePageSuccessfulMessage =                         {"CONNECTED!"};
+const String messagePageErrorMessages[2] =                          {"NO NEW CONNECTION", "REVEALED!"};
+const uint16_t timeoutMessage =                                     5000;
 
 // Button
 const uint8_t pinButton =                                           D5;

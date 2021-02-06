@@ -60,11 +60,11 @@ bool Sensor::check() {
     }
 
     if (changed) {
-        if ((getTemperature() > 0) && (getHumidity() > 0) && (getTemperature() < 125) && (getHumidity() < 100)) {
+        if ((getTemperature() >= 1) && (getHumidity() >= 1) && (getTemperature() <= 124) && (getHumidity() <= 99)) {
             notify();
             return true;
         } else {
-            Serial.println("\033[1;91m[ERROR VALUE READ]\033[0m");
+            Serial.println("\033[1;91m[SENSOR ERROR]\033[0m");
             return false;
         }
     } else {
@@ -72,9 +72,9 @@ bool Sensor::check() {
     }
 }
 
-double Sensor::getTemperature() { return this->temperature; }
+double Sensor::getTemperature() { return temperature; }
 
-double Sensor::getHumidity() { return this->humidity; }
+double Sensor::getHumidity() { return humidity; }
 
 bool Sensor::checkTemperature(double temperature) {
     if (getTemperature() != temperature) {
@@ -94,14 +94,14 @@ bool Sensor::checkHumidity(double humidity) {
     }
 }
 
-void Sensor::addObserver(AbstractObserver* observer) { this->observers.push_back(observer); }
+void Sensor::addObserver(AbstractObserver* observer) { observers.push_back(observer); }
 
-void Sensor::removeObserver(AbstractObserver* observer) { this->observers.remove(observer); }
+void Sensor::removeObserver(AbstractObserver* observer) { observers.remove(observer); }
 
 void Sensor::notify() {
-    std::list<AbstractObserver* >::iterator iteratorObservers = this->observers.begin();
+    std::list<AbstractObserver* >::iterator iteratorObservers = observers.begin();
     
-    while(iteratorObservers != this->observers.end()) {
+    while (iteratorObservers != observers.end()) {
         (*iteratorObservers)->update();
         iteratorObservers++;
     }

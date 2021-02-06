@@ -1,21 +1,22 @@
 USE airanalyzer;
 
-/* Creating the two table to store the room and the respective values. */
+/* Creating a table that will contain the room ID. */
 CREATE TABLE Room (
     ID INT PRIMARY KEY,
     Nome VARCHAR(25)
 );
 
-CREATE TABLE `Values` (
-        `When` DATETIME NOT NULL,
-        Room INT NOT NULL
-            REFERENCES Room(ID)
-            ON DELETE CASCADE
-            ON UPDATE CASCADE,
-        Temperature DECIMAL(5, 2) NOT NULL,
-        Humidity DECIMAL(5,2) NOT NULL,
-        PRIMARY KEY(`When`, Room)
+CREATE TABLE Measure (
+    DateAndTime DATETIME NOT NULL,
+    DayWeek INT NOT NULL,
+    Room INT NOT NULL
+        REFERENCES Room(ID)
+        ON DELETE NO ACTION
+        ON UPDATE CASCADE,
+    Temperature DECIMAL(5, 2) NOT NULL,
+    Humidity DECIMAL(5,2) NOT NULL,
+    PRIMARY KEY(DateAndTime, Room)
 );
 
 /* Indexing the table of values to improve the performance. */
-ALTER TABLE `Values` ADD INDEX Data (`When`);
+ALTER TABLE Measure ADD INDEX Data (DateAndTime);

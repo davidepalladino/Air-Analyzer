@@ -8,8 +8,8 @@
   * @author Davide Palladino
   * @contact me@davidepalladino.com
   * @website www.davidepalladino.com
-  * @version 1.1.0
-  * @date 21th January, 2021
+  * @version 1.1.1
+  * @date 24th January, 2021
   * 
   * This library is free software; you can redistribute it and/or
   *  modify it under the terms of the GNU General Public
@@ -50,7 +50,7 @@
         #include <AbstractObserver.h>
     #endif
 
-    #define TIMEOUT_READ_HDC 1000                                   // Timeout to read the new value from HDC sensor
+    #define TIMEOUT_READ_HDC 1000                                   // Timeout to read the new value from HDC sensor.
 
     #include <list>
 
@@ -80,8 +80,8 @@
             void begin();
 
             /** 
-             * @brief This method checks if the is some variation of temperature or humidity and if there will be, the observers will be notified.
-             * @return Boolean value "true" to indicate if there is a variation; else "false" value.
+             * @brief This method checks if there is some variation of temperature or humidity and if there will be, the observers will be notified.
+             * @return Boolean value "true" to indicate if there is a variation; else value "false".
              */
             bool check();
 

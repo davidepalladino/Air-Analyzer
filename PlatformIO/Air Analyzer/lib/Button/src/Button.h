@@ -8,8 +8,8 @@
   * @author Davide Palladino
   * @contact me@davidepalladino.com
   * @website www.davidepalladino.com
-  * @version 2.0.1
-  * @date 11th January, 2020
+  * @version 2.0.2
+  * @date 30th January, 2021
   * 
   * This library is free software; you can redistribute it and/or
   *  modify it under the terms of the GNU General Public
@@ -143,10 +143,22 @@
             void setTimeLongPress(uint32_t timeLongPress);
 
             /**
+             * @brief This method gets the time for the long press.
+             * @return Time in milliseconds for long press.
+             */          
+            uint32_t getTimeLongPress();
+
+            /**
              * @brief This method sets the type of long press, if continuous or not.
              * @param typeLongPress Value between "B_CONTINUOUS" and "B_NOTCONTINUOUS".
              */
             void setTypeLongPress(longPress_t typeLongPress);
+
+            /**
+             * @brief This method gets the type of long press, if continuous or not.
+             * @return Value between "B_CONTINUOUS" and "B_NOTCONTINUOUS".
+             */
+            longPress_t getTypeLongPress();
 
             /**
              * @brief This method sets the pointer to the procedure, for the short press.
@@ -158,19 +170,7 @@
              * @brief This method sets the pointer to the procedure, for the long press.
              * @param ptrActionLong Pointer to a procedure for the long press. The procedure must be without parameters.
              */   
-            void setPtrActionLong(ptrProcedure ptrActionLong);
-
-            /**
-             * @brief This method gets the time for the long press.
-             * @return Time in milliseconds for long press.
-             */          
-            uint32_t getTimeLongPress();
-
-            /**
-             * @brief This method gets the type of long press, if continuous or not.
-             * @return Value between "B_CONTINUOUS" and "B_NOTCONTINUOUS".
-             */
-            longPress_t getTypeLongPress();
+            void setPtrActionLong(ptrProcedure ptrActionLong);          
 
             /**
              * @brief This method gets the actual press, both for short and long. For short press there is the debouncing.
@@ -192,12 +192,6 @@
             int8_t actualValue;                         // Actual value of the button.
 
             /**
-             * @brief This method sets the pin button.
-             * @param pin Digital pin of the button.
-             */
-            void setPin(uint8_t pin);
-
-            /**
              * @brief This method sets the input mode.
              * @param mode Mode of the input.
              */
@@ -206,72 +200,6 @@
             /**
              * @brief This method sets the value where the button will be considered pressed.
              */
-            void setValuePress();
-
-            /** 
-             * @brief This method sets the timeout, that is the time within which the pressure will be considerated short.
-             * @param timeOut Time in milliseconds.
-             */
-            void setTimeOut(uint32_t timeOut);
-
-            /** 
-             * @brief This method sets the status of the button, if is pressed or not.
-             * @param isPressed Boolean value "true" if the button has been pressed; "false" if not.
-             */            
-            void setIsPressed(bool isPressed);
-
-            /**
-             * @brief This method sets the status of flag "IsLongPressed".
-             * @param isLongPressed Boolean value "true" if the last press was long; else "false".
-             */          
-            void setIsLongPressed(bool isLongPressed);  
-
-            /**
-             * @brief This method sets a symbolic value of the press in actual time, both for short and long.
-             * @param actualValue Symbolic value of press.
-             */
-            void setActualValue(int8_t actualValue);
-
-            /**
-             * @brief This method gets the pin button.
-             * @return Digital pin of the button.
-             */             
-            uint8_t getPin();
-
-            /**
-             * @brief This method gets the mode of the button.
-             * @return Mode of the button.
-             */             
-            uint8_t getMode();
-
-            /**
-             * @brief This method gets the value where the button will be considered pressed.
-             * @return Value of the press.
-             */
-            uint8_t getValuePress();
-
-            /**
-             * @brief This method gets the timeout, that is the end of time within which the press will be considerated short.
-             * @return Time in milliseconds.
-             */                
-            uint32_t getTimeOut();     
-
-            /**
-             * @brief This method gets the status of the button, if is pressed or not.
-             * @return Boolean value "true" if the button has been pressed; "false" if not.
-             */          
-            bool getIsPressed();           
-
-            /**
-             * @brief This method gets the status of flag "IsLongPressed".
-             * @return Boolean value "true" if the last press was long; else "false".
-             */          
-            bool getIsLongPressed();  
-
-            /**
-             * @brief This method gets a symbolic value of the press in actual time, both for short and long.
-             * @return Symbolic value of press.
-             */                  
-            int8_t getActualValue();
+            void setValuePress();  
     };
 #endif

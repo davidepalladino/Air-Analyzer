@@ -19,12 +19,12 @@ Button::Button(uint8_t pin, uint32_t timeLongPress, longPress_t typeLongPress, p
 Button::Button(uint8_t pin, input_t mode, uint32_t timeLongPress, ptrProcedure ptrActionShort, ptrProcedure ptrActionLong) : Button(pin, B_NOPULLUP, timeLongPress, B_NOTCONTINUOUS, ptrActionShort, ptrActionLong) {}
 
 Button::Button(uint8_t pin, input_t mode, uint32_t timeLongPress, longPress_t typeLongPress, ptrProcedure ptrActionShort, ptrProcedure ptrActionLong) {
-    setPin(pin);
+    this->pin = pin;
     setMode(mode);
 
     setValuePress();
 
-    pinMode(getPin(), getMode());
+    pinMode(this->pin, this->mode);
     
     setTimeLongPress(timeLongPress);
     setTypeLongPress(typeLongPress);
@@ -35,51 +35,51 @@ Button::Button(uint8_t pin, input_t mode, uint32_t timeLongPress, longPress_t ty
 
 void Button::setTimeLongPress(uint32_t timeLongPress) { this->timeLongPress = timeLongPress; }
 
+uint32_t Button::getTimeLongPress() { return timeLongPress; }
+
 void Button::setTypeLongPress(longPress_t typeLongPress) { this->typeLongPress = typeLongPress; }
+
+longPress_t Button::getTypeLongPress() { return typeLongPress; };
 
 void Button::setPtrActionShort(ptrProcedure ptrActionShort) { this->ptrActionShort = ptrActionShort; }
 
 void Button::setPtrActionLong(ptrProcedure ptrActionLong) { this->ptrActionLong = ptrActionLong; }
 
-uint32_t Button::getTimeLongPress() { return this->timeLongPress; }
-
-longPress_t Button::getTypeLongPress() { return this->typeLongPress; };
-
 int8_t Button::checkPress() {   
     /* Read and save the value for next analysis. */
-    uint8_t valueRead = digitalRead(getPin());
+    uint8_t valueRead = digitalRead(pin);
 
     /* Cheching if the button is pressed in this moment. */
-    if (valueRead == getValuePress()) {
+    if (valueRead == valuePress) {
         /* Checking if is the first press or not. */
-        if (!getIsPressed()) {
+        if (!isPressed) {
             //Serial.println("1.1");
-            setIsPressed(true);
+            isPressed = true;
 
             /* Checking if is set the time of long press. If there is a value, will be set the timeout. */
             if (getTimeLongPress() > DEFAULT_LONG_PRESS) {
-                setTimeOut(millis() + getTimeLongPress());
+                timeOut = millis() + getTimeLongPress();
             }
 
         } else {
             /* Checking if is the long press. */
-            if ((millis() >= getTimeOut()) && (getTimeLongPress() > DEFAULT_LONG_PRESS) && !isLongPressed) {
+            if ((millis() >= timeOut) && (getTimeLongPress() > DEFAULT_LONG_PRESS) && !isLongPressed) {
                 //Serial.println("2.1");
-                setActualValue(-1);
-                setIsLongPressed(true);
+                actualValue = -1;
+                isLongPressed = true;
 
                 /* If there is a pointer to a procedure, will be executed. */
-                if (this->ptrActionLong != NULL) {
-                    this->ptrActionLong();
+                if (ptrActionLong != NULL) {
+                    ptrActionLong();
                     
                     while (valueRead == HIGH); 
                 }
             } else if (isLongPressed && (getTypeLongPress() == B_NOTCONTINUOUS)) {
                 //Serial.println("2.2");
-                setActualValue(0);
+                actualValue = 0;
             } else {
                 //Serial.println("2.3");
-                setActualValue(0);
+                actualValue = 0;
             }
             
         }
@@ -87,30 +87,28 @@ int8_t Button::checkPress() {
     /* Else, the button is not pressed in this moment. */
     } else {
         /* Checking if is the short press, verifying if is set the "timeLongPress" or not. */      
-        if (getIsPressed() && (((getActualValue() != -1) && (millis() < getTimeOut()) && !isLongPressed) || (getTimeLongPress() == DEFAULT_LONG_PRESS))) {
+        if (isPressed && (((actualValue != -1) && (millis() < timeOut) && !isLongPressed) || (getTimeLongPress() == DEFAULT_LONG_PRESS))) {
             //Serial.println("3.1");
-            setActualValue(1);
-            setIsPressed(false);
-            setIsLongPressed(false);
+            actualValue = 1;
+            isPressed = false;
+            isLongPressed = false;
 
             /* If there is a pointer to a procedure, will be executed. */
-            if (this->ptrActionShort != NULL) {
-                this->ptrActionShort();
+            if (ptrActionShort != NULL) {
+                ptrActionShort();
             }
 
         /* Else, is not a press. */
         } else {
             //Serial.println("3.2");
-            setActualValue(0);
-            setIsPressed(false);
-            setIsLongPressed(false);
+            actualValue = 0;
+            isPressed = false;
+            isLongPressed = false;
         }
     }
 
-    return getActualValue();
+    return actualValue;
 }
-
-void Button::setPin(uint8_t pin) { this->pin = pin; }
 
 void Button::setMode(input_t mode) {
     /* Translation of "mode" parameter "B_NOPULLUP"/"B_PULLUP" to the rispective "INPUT"/"INPUT_PULLUP". */
@@ -123,31 +121,9 @@ void Button::setMode(input_t mode) {
 
 void Button::setValuePress() {
     /* Checking what is the value of press, "HIGH" if the mode is INPUT; "LOW" if is INPUT_PULLUP. */
-    if (getMode() == INPUT) {
+    if (mode == INPUT) {
         valuePress = HIGH;
-    } else if (getMode() == INPUT_PULLUP) {
+    } else if (mode == INPUT_PULLUP) {
         valuePress = LOW;
     }
 }
-
-void Button::setTimeOut(uint32_t timeOut) { this->timeOut = timeOut; }
-
-void Button::setIsPressed(bool isPressed) { this->isPressed = isPressed; }
-
-void Button::setIsLongPressed(bool isLongPressed) { this->isLongPressed = isLongPressed; }
-
-void Button::setActualValue(int8_t actualValue) { this->actualValue = actualValue; }
-
-uint8_t Button::getPin() { return this->pin; }
-
-uint8_t Button::getMode() { return this->mode; }
-
-uint8_t Button::getValuePress() { return this->valuePress; }
-
-uint32_t Button::getTimeOut() { return this->timeOut; }
-
-bool Button::getIsPressed() { return this->isPressed; }
-
-bool Button::getIsLongPressed() { return this->isLongPressed; }  
-
-int8_t Button::getActualValue() { return this->actualValue; }

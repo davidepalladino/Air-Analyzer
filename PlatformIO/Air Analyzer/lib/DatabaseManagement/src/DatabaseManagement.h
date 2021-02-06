@@ -7,8 +7,8 @@
   * @author Davide Palladino
   * @contact me@davidepalladino.com
   * @website www.davidepalladino.com
-  * @version 1.1.0
-  * @date 21th January, 2021
+  * @version 1.1.1
+  * @date 31th January, 2021
   * 
   * This library is free software; you can redistribute it and/or
   *  modify it under the terms of the GNU General Public
@@ -21,6 +21,8 @@
   *  GNU Lesser General Public License for more details.
   * 
   */
+
+//#define MAX_CONNECT_ATTEMPTS 1
 
 #ifndef DATABASEMANAGEMENT_H
     #define DATABASEMANAGEMENT_H
@@ -57,6 +59,8 @@
         #include "..\..\..\configDatabase.h"
     #endif
 
+    #define TIMEOUT_UPDATE_DATABASE_ERROR 30000                         // Timeout for next update of database in case of error
+
     /* Type of query to indicate to "executeQuery" method. */
     typedef enum queryType : uint8_t {DM_ROOM, DM_VALUES} queryType_t;
 
@@ -72,7 +76,7 @@
              * @param timezone Timezone is expressed in hour.
              * @param totalMinuteUpdate Total minutes for every update.
              */
-            DatabaseManagement(Sensor &sensor, int8_t timezone, uint8_t totalMinutesUpdate);
+            DatabaseManagement(Sensor& sensor, int8_t timezone, uint8_t totalMinutesUpdate);
 
             /** 
              * @brief This method initializes the NTP object.
@@ -105,12 +109,13 @@
             bool executeQuery(queryType_t queryType);
 
         private:
-            Sensor &sensor;
+            Sensor& sensor;
             DatetimeInterval* datetime;
             IPAddress* databaseAddress;
             MySQL_Connection* database;
             uint8_t roomID;
             bool isErrorUpdate;
+            unsigned long endTimeoutUpdateDabataseError;
 
             /**
              * @brief This method creates the query to insert the room of this sensor into database.

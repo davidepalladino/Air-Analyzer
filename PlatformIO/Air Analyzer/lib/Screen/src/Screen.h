@@ -7,8 +7,8 @@
   * @author Davide Palladino
   * @contact me@davidepalladino.com
   * @website www.davidepalladino.com
-  * @version 1.1.0
-  * @date 21th January, 2021
+  * @version 1.2.0
+  * @date 25th January, 2021
   * 
   * This library is free software; you can redistribute it and/or
   *  modify it under the terms of the GNU General Public
@@ -62,7 +62,7 @@
              * @param pinSCL Pin SCL where is connected the screen.
              * @param pinSDA Pin SDA where i connected the screen.
              */
-            Screen(Sensor &sensor, uint8_t pinSCL, uint8_t pinSDA);
+            Screen(Sensor& sensor, uint8_t pinSCL, uint8_t pinSDA);
 
             /** 
              * @brief This method initializes the screen object.
@@ -100,6 +100,20 @@
             bool getIsErrorUpdate();
 
             /**
+             * @brief This methods shows an installation page about the room ID.
+             * @param messages Array of three messages to visualize.
+             */
+            void showInstallationRoomIDPage(const String messages[3]);
+
+            /**
+             * @brief This methods shows an installation page about the WiFi.
+             * @param messages Array of six messages to visualize.
+             * @param result Type of rows to visualize: "0" for three rows considering the first, second and third message;
+             *  "1" considering the fourth and fifth messages ; "2" considering the sixth message.
+             */
+            void showInstallationWiFiPage(const String messages[6], uint8_t result);
+
+            /**
              * @brief This method shows a page with an loading bar and a description message.
              * @param message The specific message to visualize.
              * @param percentage Percentage to fill the loading bar.
@@ -121,15 +135,14 @@
 
             /**
              * @brief This method shows a simple page with two simple rows of messages at the center.
-             * @param messageOne The first row of message to visualize.
-             * @param messageTwo The second row of message to visualize.
+             * @param messages The two messages to visualize.
              * @warning The single row of message shall be of maximum 18 character. Other characters may be lost at right of screen.
              */
-            void showMessagePage(String messageOne, String messageTwo);
-
+            void showMessagePage(const String messages[2]);
+            
         private:
             U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C* screen;
-            Sensor &sensor;
+            Sensor& sensor;
             uint8_t roomID;
             bool isConnectedWiFi;
             bool isErrorUpdate;
@@ -150,29 +163,29 @@
             void drawMessage(uint8_t positionX, uint8_t positionY, String message);
 
             /**
-             * @brief This method draws the single message considering the "x" and "y" positions.
-             * @param positionX X position.
-             * @param positionY Y position.
-             * @param messageOne The first row of message to visualize.
-             * @param messageTwo The second row of message to visualize.
-             * @warning The single row of message shall be of maximum 18 character. Other characters may be lost at right of screen.
+             * @brief This method draws a circle with the room ID inside.
              */
-            void drawMessage(uint8_t positionX, uint8_t positionY, String messageOne, String messageTwo);
+            void drawRoomID();
 
-            /** 
-             * @brief This method draws the icons of temperature and humidity.
+            /**
+             * @brief This method draws the icon of temperature and the read value.
              */
-            void drawIcons();
+            void drawTemperature();
 
-            /** 
-             * @brief This method draws the values of temperature and humidity.
+            /**
+             * @brief This method draws the icon of humidity and the read value.
              */
-            void drawValues();
+            void drawHumidity();
 
-            /** 
-             * @brief This method draws the units of temperature and humidity.
+            /**
+             * @brief This method draws the status icon of WiFi.
              */
-            void drawUnits();
+            void drawWiFiStatus();
+
+            /**
+             * @brief This method draws the status icon of error.
+             */
+            void drawErrorStatus();
 
             /** 
              * @brief This method update the main screen.

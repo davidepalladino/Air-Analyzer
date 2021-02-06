@@ -7,8 +7,8 @@
   * @author Davide Palladino
   * @contact me@davidepalladino.com
   * @website www.davidepalladino.com
-  * @version 1.0.2
-  * @date 21th January, 2021
+  * @version 1.0.3
+  * @date 27th January, 2021
   * 
   * This library is free software; you can redistribute it and/or
   *  modify it under the terms of the GNU General Public
@@ -45,10 +45,13 @@
         #include <time.h>
     #endif
 
+    #define TIMEOUT_CHECK_NTP 15000                                   // Timeout to check the datetime from NTP.
+
     typedef struct {
         uint16_t year;
         uint8_t month;
         uint8_t day;
+        uint8_t wday;
         uint8_t hour;
         uint8_t minute;
         uint8_t second;
@@ -73,42 +76,48 @@
 
             /** 
              * @brief This method initializes the NTP object.
-             * @return Boolean value "true" to indicate if there is a variation; else "false" value.
+             * @return Boolean value "true" to indicate if there is a variation; else value "false".
              */
             bool checkTime();
 
             /** 
-             * @brief This method gets the actual and last year read with th NTP object.
+             * @brief This method gets the actual and last year read with the NTP object.
              * @return Actual and last year read.
              */
             uint16_t getActualYear();
 
             /** 
-             * @brief This method gets the actual and last month read with th NTP object.
+             * @brief This method gets the actual and last month read with the NTP object.
              * @return Actual and last month read.
              */
             uint8_t getActualMonth();
 
             /** 
-             * @brief This method gets the actual and last day read with th NTP object.
+             * @brief This method gets the actual and last day read with the NTP object.
              * @return Actual and last day read.
              */
             uint8_t getActualDay();
 
             /** 
-             * @brief This method gets the actual and last hour read with th NTP object.
+             * @brief This method gets the day of week read with the NTP object.
+             * @return Actual and last day of week read. Value "0" is about to sunday; "1" for monday.
+             */
+            uint8_t getActualDayWeek();
+
+            /** 
+             * @brief This method gets the actual and last hour read with the NTP object.
              * @return Actual and last hour read.
              */
             uint8_t getActualHour();
 
             /** 
-             * @brief This method gets the actual and last minute read with th NTP object.
+             * @brief This method gets the actual and last minute read with the NTP object.
              * @return Actual and last minute read.
              */
             uint8_t getActualMinute();
 
             /** 
-             * @brief This method gets the actual and last second read with th NTP object.
+             * @brief This method gets the actual and last second read with the NTP object.
              * @return Actual and last second read.
              */
             uint8_t getActualSecond();
@@ -120,6 +129,7 @@
             struct tm* tempDatetime;
             datetime_t actualDatetime;
             datetime_t nextDatetime;
+            unsigned long endTimeoutNTP;
 
             /** 
              * @brief This method translates a raw format to datetime_t format.
@@ -136,8 +146,8 @@
             uint8_t getMaxDay(uint8_t year, uint8_t month);
 
             /** 
-             * @brief This method configs the actual datetime with the NTP object.
-             * @return Boolean value "false" to indicate if there is an error with the connection; else "false" value.
+             * @brief This method configs the actual datetime with the NTP object after "TIMEOUT_CHECK_NTP" milliseconds from the last update.
+             * @return Boolean value "true" to indicate if the actualdatetime has been updated; else value "false".
              */
             bool configActualDatetime();
 
