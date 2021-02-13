@@ -1,0 +1,77 @@
+<resources>
+    <string name="app_name">Air Analyzer</string>
+    <string name="editTextSignIn">Sign up</string>
+    <string name="editTextUsername">Username</string>
+    <string name="editTextPassword">Password</string>
+    <string name="editTextEmail">Email</string>
+    <string name="editTextName">Name</string>
+    <string name="editTextSurname">Surname</string>
+    <string name="textViewQuestion1">Question 1</string>
+    <string name="textViewQuestion2">Question 2</string>
+    <string name="textViewQuestion3">Question 3</string>
+    <string name="editTextAnswer">Answer</string>
+    <string name="buttonContinue">Continue</string>
+    <string name="question1">A</string>
+    <string name="question2">B</string>
+    <string name="question3">C</string>
+    <string name="question4">D</string>
+    <string name="question5">E</string>
+    <string name="question6">F</string>
+    <string name="question7">G</string>
+    <string name="question8">H</string>
+    <string name="question9">I</string>
+    <string name="question10">L</string>
+    <string name="question11">M</string>
+    <string name="question12">N</string>
+    <string name="question13">O</string>
+    <string name="question14">P</string>
+    <string name="question15">Q</string>
+    <string name="errorUsername">Enter the username</string>
+    <string name="existsUsername">This username already exists. Try another!</string>
+    <string name="errorPassowrd">Enter the password</string>
+    <string name="noticePassword">Password must contain at least 1 upper case letter, 1 lower case letter, 1 numeric character and 1 special character</string>
+    <string name="errorEmail">Enter the email</string>
+    <string name="noticeEmail">Enter the correct email</string>
+    <string name="existsEmail">This email already exists. Try another!</string>
+    <string name="errorName">Enter the name</string>
+    <string name="errorSurname">Enter the surname</string>
+    <string name="errorAnswer">Enter the answer</string>
+    <string name="toastErrorSignup">There are some error on the fields. Check them!</string>
+    <string name="toastErrorLogin">There are some error on the fields. Check them!</string>
+    <string name="toastErrorServer">Internal error. Try again later!</string>
+    <string name="alertDialogSignInSuccessful">Your registration is nearly complete. Check you email to validate.</string>
+    <string name="nice">Nice</string>
+    <string name="ok">Ok</string>
+    <string name="toastErrorService">Service is disabled!</string>
+    <string name="textViewNew">New?\u0020</string>
+    <string name="textViewSignup">Sign up</string>
+    <string name="textViewForgotPassword">Forgot password</string>
+    <string name="buttonLogin">Login</string>
+    <string name="toastUserNotValidated">This user is not validated!</string>
+    <string name="toastIncorrectUsernamePassword">Incorrect username or password!</string>
+    <string name="textViewLogin">Login</string>
+
+    <array name="Questions1">
+        <item name="a">@string/question1</item>
+        <item>@string/question2</item>
+        <item>@string/question3</item>
+        <item>@string/question4</item>
+        <item>@string/question5</item>
+    </array>
+
+    <array name="Questions2">
+        <item>@string/question6</item>
+        <item>@string/question7</item>
+        <item>@string/question8</item>
+        <item>@string/question9</item>
+        <item>@string/question10</item>
+    </array>
+
+    <array name="Questions3">
+        <item>@string/question11</item>
+        <item>@string/question12</item>
+        <item>@string/question13</item>
+        <item>@string/question14</item>
+        <item>@string/question15</item>
+    </array>
+</resources>
