@@ -1,55 +1,62 @@
 <resources>
     <string name="app_name">Air Analyzer</string>
+
     <string name="editTextSignIn">Sign up</string>
     <string name="editTextUsername">Username</string>
     <string name="editTextPassword">Password</string>
     <string name="editTextEmail">Email</string>
     <string name="editTextName">Name</string>
     <string name="editTextSurname">Surname</string>
+    <string name="editTextAnswer">Answer</string>
+
     <string name="textViewQuestion1">Question 1</string>
     <string name="textViewQuestion2">Question 2</string>
     <string name="textViewQuestion3">Question 3</string>
-    <string name="editTextAnswer">Answer</string>
+    <string name="textViewNew">New?\u0020</string>
+    <string name="textViewSignup">Sign up</string>
+    <string name="textViewLogin">Login</string>
+    <string name="textViewForgotPassword">Forgot password</string>
+
+    <string name="buttonLogin">Login</string>
     <string name="buttonContinue">Continue</string>
-    <string name="question1">A</string>
-    <string name="question2">B</string>
-    <string name="question3">C</string>
-    <string name="question4">D</string>
-    <string name="question5">E</string>
-    <string name="question6">F</string>
-    <string name="question7">G</string>
-    <string name="question8">H</string>
-    <string name="question9">I</string>
-    <string name="question10">L</string>
-    <string name="question11">M</string>
-    <string name="question12">N</string>
-    <string name="question13">O</string>
-    <string name="question14">P</string>
-    <string name="question15">Q</string>
+
+    <string name="question1">Il primo animale domestico di un tuo genitore?</string>
+    <string name="question2">In quale città si sono conosciuti i tuoi nonni?</string>
+    <string name="question3">Il primo lavoro di tuo\o nonno\a?</string>
+    <string name="question4">Qual\'è stato il primo viaggio di un tuo parente?</string>
+    <string name="question5">Come si chiama il primo amico del cuore di tuo padre?</string>
+    <string name="question6">Qual\'è il primo insegnante che ti ha dato il massimo dei voti?</string>
+    <string name="question7">Qual\'è il tempo libero di tuo zio?</string>
+    <string name="question8">In quale città si trovava la prima casa dei tuoi nonni?</string>
+    <string name="question9">Chi è il primo laureato in famiglia?</string>
+    <string name="question10">In quale nazione si voleva trasferire un tuo parente?</string>
+    <string name="question11">Qual\'è stata la vacanza più interessante di un tuo conoscente?</string>
+    <string name="question12">In quale anno un tuo parente ha avuto la patente?</string>
+    <string name="question13">Come si chiama la prima amica del cuore di tua madre?</string>
+    <string name="question14">In quale occasione un tuo genitore ha ricevuto la prima multa?</string>
+    <string name="question15">Qual\'è la prima auto di un tuo parente?</string>
+
     <string name="errorUsername">Enter the username</string>
-    <string name="existsUsername">This username already exists. Try another!</string>
     <string name="errorPassowrd">Enter the password</string>
-    <string name="noticePassword">Password must contain at least 1 upper case letter, 1 lower case letter, 1 numeric character and 1 special character</string>
     <string name="errorEmail">Enter the email</string>
-    <string name="noticeEmail">Enter the correct email</string>
-    <string name="existsEmail">This email already exists. Try another!</string>
     <string name="errorName">Enter the name</string>
     <string name="errorSurname">Enter the surname</string>
     <string name="errorAnswer">Enter the answer</string>
+
+    <string name="noticeUsername">Username should be 5–20 characters long and can contain \"-\" and \"_\" like special characters.</string>
+    <string name="noticePassword">Password should be 16–24 characters long and must contain one upper case letter, one numeric character and one special character (@$!%*?&amp;.#).</string>
+    <string name="noticeEmail">Enter the correct email</string>
+
+    <string name="existsUsername">This username already exists. Try another!</string>
+    <string name="existsEmail">This email already exists. Try another!</string>
+
+
     <string name="toastErrorSignup">There are some error on the fields. Check them!</string>
     <string name="toastErrorLogin">There are some error on the fields. Check them!</string>
-    <string name="toastErrorServer">Internal error. Try again later!</string>
-    <string name="alertDialogSignInSuccessful">Your registration is nearly complete. Check you email to validate.</string>
-    <string name="nice">Nice</string>
-    <string name="ok">Ok</string>
-    <string name="toastErrorService">Service is disabled!</string>
-    <string name="textViewNew">New?\u0020</string>
-    <string name="textViewSignup">Sign up</string>
-    <string name="textViewForgotPassword">Forgot password</string>
-    <string name="buttonLogin">Login</string>
+    <string name="toastServerOffline">Server offline. Try again later!</string>
     <string name="toastUserNotValidated">This user is not validated!</string>
     <string name="toastIncorrectUsernamePassword">Incorrect username or password!</string>
-    <string name="textViewLogin">Login</string>
+    <string name="toastErrorService">Service is disabled!</string>
 
     <array name="Questions1">
         <item name="a">@string/question1</item>
@@ -74,4 +81,22 @@
         <item>@string/question14</item>
         <item>@string/question15</item>
     </array>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="textViewTemperature">Temperature</string>
+    <string name="textViewHumidity">Humidity</string>
+    <string name="textViewAverage">Average</string>
+    <string name="textViewFull">Full</string>
+    <string name="textViewSeparator">|</string>
+    <string name="textViewLastMeasurement">Last measurement</string>
+    <string name="menuItemRenameThisRoom">Rename this room</string>
+    <string name="menuItemRemoveThisRoom">Remove this room</string>
+    <string name="menuItemLogout">Logout</string>
+    <string name="toastNoMeasuresOnDate">No measures in this date!</string>
+    <string name="dialogSignup">Your registration is nearly complete. Check you email to validate it.</string>
+    <string name="dialogRenameRoom">Write the new name of this room. Empty field will not apply any change.</string>
+    <string name="dialogRemoveRoom">Are you sure you want to remove this room? This operation will not delete all the measures read.</string>
+    <string name="buttonOk">OK</string>
+    <string name="buttonCancel">Cancel</string>
+    <string name="textViewSignupComplete">Sign up complete</string>
 </resources>

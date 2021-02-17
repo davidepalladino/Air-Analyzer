@@ -1,12 +1,18 @@
-package it.davidepalladino.airanalyzer.view;
+package it.davidepalladino.airanalyzer.view.activity;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 
+import android.os.IBinder;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,25 +22,22 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-
 import it.davidepalladino.airanalyzer.R;
-import it.davidepalladino.airanalyzer.control.API;
+import it.davidepalladino.airanalyzer.control.DatabaseService;
+import it.davidepalladino.airanalyzer.control.Setting;
 import it.davidepalladino.airanalyzer.control.TextWatcherField;
-import it.davidepalladino.airanalyzer.model.api.Login;
-import it.davidepalladino.airanalyzer.model.api.Signup;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import it.davidepalladino.airanalyzer.model.Signup;
+import it.davidepalladino.airanalyzer.view.dialog.RemoveRoomDialog;
+import it.davidepalladino.airanalyzer.view.dialog.SignupDialog;
 
 import static it.davidepalladino.airanalyzer.control.CheckField.*;
+import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE;
 
 public class SignupActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, TextWatcherField.AuthTextWatcherCallback {
-    private static final String NAMEFILE_LOGIN = "login";
+    private static final String BROADCAST_REQUEST_CODE_MASTER = "SignupActivity";
+    private static final String BROADCAST_REQUEST_CODE_EXTENSION_CHECK_USERNAME = "CheckUsername";
+    private static final String BROADCAST_REQUEST_CODE_EXTENSION_CHECK_EMAIL = "CheckEmail";
+    private static final String BROADCAST_REQUEST_CODE_EXTENSION_SIGNUP = "Signup";
 
     private EditText editTextUsername;
     private EditText editTextPassword;
@@ -60,20 +63,17 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
 
     private Button buttonContinue;
 
-    private API api;
-
-    private Intent intentFrom;
-
     private String questionSelected1;
     private String questionSelected2;
     private String questionSelected3;
+
+    private Setting setting;
+    private Signup signup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
-
-        intentFrom = getIntent();
 
         editTextUsername = (EditText) findViewById(R.id.editTextUsername);
         editTextPassword = (EditText) findViewById(R.id.editTextPassword);
@@ -127,42 +127,42 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
         buttonContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean error = false;
+                boolean errorField = false;
 
                 if (!checkAuthEditText(editTextUsername)) {
-                    error = true;
+                    errorField = true;
                 }
 
                 if (!checkAuthEditText(editTextPassword)) {
-                    error = true;
+                    errorField = true;
                 }
 
                 if (!checkAuthEditText(editTextEmail)) {
-                    error = true;
+                    errorField = true;
                 }
 
                 if (!checkAuthEditText(editTextName)) {
-                    error = true;
+                    errorField = true;
                 }
 
                 if (!checkAuthEditText(editTextSurname)) {
-                    error = true;
+                    errorField = true;
                 }
 
                 if (!checkAuthEditText(editTextAnswer1)) {
-                    error = true;
+                    errorField = true;
                 }
 
                 if (!checkAuthEditText(editTextAnswer2)) {
-                    error = true;
+                    errorField = true;
                 }
 
                 if (!checkAuthEditText(editTextAnswer3)) {
-                    error = true;
+                    errorField = true;
                 }
 
-                if (!error) {
-                    Signup signup = new Signup(
+                if (!errorField) {
+                    signup = new Signup(
                             "",
                             editTextUsername.getText().toString(),
                             editTextPassword.getText().toString(),
@@ -172,12 +172,16 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
                             questionSelected1,
                             questionSelected2,
                             questionSelected3,
-                            editTextAnswer1.getText().toString(),
-                            editTextAnswer2.getText().toString(),
-                            editTextAnswer3.getText().toString()
+                            editTextAnswer1.getText().toString().toLowerCase(),
+                            editTextAnswer2.getText().toString().toLowerCase(),
+                            editTextAnswer3.getText().toString().toLowerCase()
                     );
 
-                    executeSignup(signup);
+                    //databaseService.checkUsername(signup.getUsername(), REQUEST_CODE_MASTER + REQUEST_CODE_EXTENSION_CHECK_USERNAME);
+                    //databaseService.checkEmail(signup.getEmail(), REQUEST_CODE_MASTER + REQUEST_CODE_EXTENSION_CHECK_EMAIL);
+
+                    databaseService.signup(signup, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SIGNUP);
+
                 } else {
                     Toast.makeText(SignupActivity.this, getString(R.string.toastErrorSignup), Toast.LENGTH_LONG).show();
                 }
@@ -188,27 +192,41 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
     @Override
     protected void onStart() {
         super.onStart();
+        setting = new Setting(SignupActivity.this);
+    }
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(API.BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-        api = retrofit.create(API.class);
+        registerReceiver(broadcastReceiver, new IntentFilter(DatabaseService.BROADCAST));
+
+        Intent intentDatabaseService = new Intent(SignupActivity.this, DatabaseService.class);
+        bindService(intentDatabaseService, serviceConnection, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        unbindService(serviceConnection);
+        unregisterReceiver(broadcastReceiver);
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if (parent.getId() == R.id.spinnerQuestions1) {
-            questionSelected1 = parent.getItemAtPosition(position).toString();
-        }
+        int spinnerID = parent.getId();
 
-        if (parent.getId() == R.id.spinnerQuestions2) {
-            questionSelected2 = parent.getItemAtPosition(position).toString();
-        }
-
-        if (parent.getId() == R.id.spinnerQuestions3) {
-            questionSelected3 = parent.getItemAtPosition(position).toString();
+        switch (spinnerID) {
+            case R.id.spinnerQuestions1:
+                questionSelected1 = parent.getItemAtPosition(position).toString();
+                break;
+            case R.id.spinnerQuestions2:
+                questionSelected2 = parent.getItemAtPosition(position).toString();
+                break;
+            case R.id.spinnerQuestions3:
+                questionSelected3 = parent.getItemAtPosition(position).toString();
+                break;
         }
     }
 
@@ -222,64 +240,66 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
         TextView errorTextView = null;
         String errorMessage = "";
 
-        boolean error = false;
+        boolean errorSyntax = false;
 
         switch (editText.getId()) {
             case R.id.editTextUsername:
                 errorTextView = textViewUsername;
                 errorMessage = getString(R.string.errorUsername);
 
-                break;
+                databaseService.checkUsername(editText.getText().toString(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_CHECK_USERNAME);
 
+                if (!checkUsername(editText) && !editText.getText().toString().isEmpty()) {
+                    errorSyntax = true;
+                    errorMessage = getString(R.string.noticeUsername);
+                }
+
+                break;
             case R.id.editTextPassword:
                 errorTextView = textViewPassword;
                 errorMessage = getString(R.string.errorPassowrd);
 
                 if (!checkPassword(editText) && !editText.getText().toString().isEmpty()) {
-                    error = true;
+                    errorSyntax = true;
                     errorMessage = getString(R.string.noticePassword);
                 }
 
                 break;
-
             case R.id.editTextEmail:
                 errorTextView = textViewEmail;
                 errorMessage = getString(R.string.errorEmail);
 
+                databaseService.checkEmail(editText.getText().toString(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_CHECK_EMAIL);
+
                 if (!checkEmail(editText) && !editText.getText().toString().isEmpty()) {
-                    error = true;
+                    errorSyntax = true;
                     errorMessage = getString(R.string.noticeEmail);
                 }
 
                 break;
-
             case R.id.editTextName:
                 errorTextView = textViewName;
                 errorMessage = getString(R.string.errorName);
                 break;
-
             case R.id.editTextSurname:
                 errorTextView = textViewSurname;
                 errorMessage = getString(R.string.errorSurname);
                 break;
-
             case R.id.editTextAnswer1:
                 errorTextView = textViewAnswer1;
                 errorMessage = getString(R.string.errorAnswer);
                 break;
-
             case R.id.editTextAnswer2:
                 errorTextView = textViewAnswer2;
                 errorMessage = getString(R.string.errorAnswer);
                 break;
-
             case R.id.editTextAnswer3:
                 errorTextView = textViewAnswer3;
                 errorMessage = getString(R.string.errorAnswer);
                 break;
         }
 
-        if (editText.getText().toString().length() != 0 && !error) {
+        if (!editText.getText().toString().isEmpty() && !errorSyntax) {
             errorTextView.setVisibility(View.GONE);
 
             return true;
@@ -291,99 +311,65 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
         }
     }
 
-    private void executeSignup(Signup signup) {
-        /* Verifying if the username is already exists or not. */
-        if (!editTextUsername.getText().toString().isEmpty()) {
-            Call<Signup.NoResponse> call = api.checkUsername(editTextUsername.getText().toString());
-            call.enqueue(new Callback<Signup.NoResponse>() {
-                @Override
-                public void onResponse(Call<Signup.NoResponse> call, Response<Signup.NoResponse> response) {
-                    if (response.code() == 422) {
-                        return;
-                    }
-
-                    if (response.code() == 201) {
-                        /* Using direct the TextView of the class because is a async method. */
-                        textViewUsername.setVisibility(View.VISIBLE);
-                        textViewUsername.setText(getString(R.string.existsUsername));
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<Signup.NoResponse> call, Throwable t) {
-
-                }
-            });
+    public DatabaseService databaseService;
+    public ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            DatabaseService.LocalBinder localBinder = (DatabaseService.LocalBinder) service;
+            databaseService = localBinder.getService();
         }
 
-        /* Verifying if the email is already exists or not. */
-        if (!editTextEmail.getText().toString().isEmpty()) {
-            Call<Signup.NoResponse> call = api.checkEmail(editTextEmail.getText().toString());
-            call.enqueue(new Callback<Signup.NoResponse>() {
-                @Override
-                public void onResponse(Call<Signup.NoResponse> call, Response<Signup.NoResponse> response) {
-                    if (response.code() == 422) {
-                        return;
-                    }
-
-                    if (response.code() == 201) {
-                        /* Using direct the TextView of the class because is a async method. */
-                        textViewEmail.setVisibility(View.VISIBLE);
-                        textViewEmail.setText(getString(R.string.existsEmail));
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<Signup.NoResponse> call, Throwable t) {
-
-                }
-            });
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
         }
+    };
 
-        /* Trying to signup the new user. */
-        Call<Signup.NoResponse> call = api.signup(signup);
-        call.enqueue(new Callback<Signup.NoResponse>() {
-            @Override
-            public void onResponse(Call<Signup.NoResponse> call, Response<Signup.NoResponse> response) {
-                if (response.code() == 422) {
-                    Toast.makeText(SignupActivity.this, getString(R.string.toastErrorSignup), Toast.LENGTH_LONG).show();
-                } else if (response.code() == 201) {
-                    saveFileLogin(signup);
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context contextFrom, Intent intentFrom) {
+        if (intentFrom != null) {
+            if (intentFrom.hasExtra(REQUEST_CODE) && intentFrom.hasExtra(DatabaseService.STATUS_CODE)) {
+                Intent intentTo = null;
 
-                    new AlertDialog.Builder(SignupActivity.this)
-                            .setTitle(R.string.nice)
-                            .setMessage(R.string.alertDialogSignInSuccessful)
-                            .setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    finish();
-                                }
-                            })
-                            .setIcon(R.drawable.ic_baseline_done_24)
-                            .show();
-                } else if (response.code() == 500) {
-                    Toast.makeText(SignupActivity.this, getString(R.string.toastErrorServer), Toast.LENGTH_LONG).show();
-                } else if (response.code() == 403) {
-                    Toast.makeText(SignupActivity.this, getString(R.string.toastErrorService), Toast.LENGTH_LONG).show();
+                int statusCode = intentFrom.getIntExtra(DatabaseService.STATUS_CODE, 0);
+                switch (statusCode) {
+                    case 201:
+                        // CHECK USERNAME BROADCAST
+                        if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_CHECK_USERNAME) == 0) {
+                            textViewUsername.setVisibility(View.VISIBLE);
+                            textViewUsername.setText(getString(R.string.existsUsername));
+
+                        // CHECK EMAIL BROADCAST
+                        } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_CHECK_EMAIL) == 0) {
+                            textViewEmail.setVisibility(View.VISIBLE);
+                            textViewEmail.setText(getString(R.string.existsEmail));
+
+                        // SIGN UP
+                        } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SIGNUP) == 0) {
+                            textViewUsername.setVisibility(View.GONE);
+                            textViewEmail.setVisibility(View.GONE);
+
+                            //setting.saveLogin(new Login(signup.getUsername(), signup.getPassword()));
+
+                            SignupDialog signupDialog = new SignupDialog();
+                            signupDialog.setActivity(SignupActivity.this);
+                            signupDialog.show(getSupportFragmentManager(), "");
+                        }
+
+                        break;
+                    case 403:
+                        Toast.makeText(SignupActivity.this, getString(R.string.toastErrorService), Toast.LENGTH_LONG).show();
+                        break;
+                    case 404:
+                    case 500:
+                        Toast.makeText(SignupActivity.this, getString(R.string.toastServerOffline), Toast.LENGTH_LONG).show();
+                        break;
+                    case 422:
+                        Toast.makeText(SignupActivity.this, getString(R.string.toastErrorSignup), Toast.LENGTH_LONG).show();
+                        break;
                 }
             }
-
-            @Override
-            public void onFailure(Call<Signup.NoResponse> call, Throwable t) {
-
-            }
-        });
-    }
-
-    private void saveFileLogin(Signup signup) {
-        try {
-            FileOutputStream loginFOS = openFileOutput(NAMEFILE_LOGIN, MODE_PRIVATE);
-
-            ObjectOutputStream loginOOS = new ObjectOutputStream(loginFOS);
-            loginOOS.writeObject(new Login(signup.getUsername(), signup.getPassword()));
-            loginOOS.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-    }
+        }
+    };
 }

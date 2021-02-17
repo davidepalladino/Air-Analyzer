@@ -3,7 +3,8 @@ USE airanalyzer;
 /* Creating a table that will contain the room ID. */
 CREATE TABLE Room (
     ID INT PRIMARY KEY,
-    Nome VARCHAR(25)
+    Name VARCHAR(25),
+    IsActive BOOLEAN NOT NULL,
 );
 
 CREATE TABLE Measure (

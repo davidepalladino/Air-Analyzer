@@ -5,17 +5,52 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".view.MainActivity"
+    tools:context=".view.activity.MainActivity"
     android:orientation="vertical" >
 
-    <com.jjoe64.graphview.GraphView
-        android:id="@+id/graph"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarMain"
+        app:logo="@mipmap/ic_launcher_round"
         android:layout_width="match_parent"
-        android:layout_height="200dp" />
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primaryColor"
+        android:elevation="5dp"
+        app:contentInsetStartWithNavigation="0dp"
+        app:contentInsetEnd="0dp"
+        app:contentInsetLeft="0dp"
+        app:contentInsetRight="0dp"
+        app:contentInsetStart="0dp"
+        app:titleTextColor="@color/primaryTextDarkColor1"
+        app:subtitleTextColor="@color/primaryTextDarkColor1"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-    <ListView
-        android:id="@+id/listViewMeasures"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabbarRoom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:tabGravity="center"
+        app:tabMode="scrollable" >
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <FrameLayout
+        android:id="@+id/frameRoom"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent" >
 
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/floatingActionButtonCalendar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            app:backgroundTint="@color/primaryColor"
+            app:iconTint="@color/primaryTextDarkColor1"
+            app:icon="@drawable/ic_baseline_calendar_today_24" />
+    </FrameLayout>
 </LinearLayout>

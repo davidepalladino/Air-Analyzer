@@ -1,4 +1,4 @@
-package it.davidepalladino.airanalyzer.model.api;
+package it.davidepalladino.airanalyzer.model;
 
 import java.io.Serializable;
 

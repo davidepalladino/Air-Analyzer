@@ -5,8 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".view.LoginActivity"
-    android:background="@color/primaryLightColor"
+    tools:context=".view.activity.LoginActivity"
+    android:background="@color/primaryColor"
     android:orientation="vertical" >
 
     <!-- Title -->
@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        app:boxBackgroundColor="@color/primaryLightColor"
+        app:boxBackgroundColor="@color/primaryColor"
         android:textColorHint="@color/primaryTextDarkColor2"
         app:hintTextColor="@color/primaryTextDarkColor2"
         app:boxStrokeColor="@color/primaryTextDarkColor2"
@@ -48,7 +48,7 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:layout_gravity="center"
-        android:textColor="@color/pastelRed"
+        android:textColor="@color/error"
         android:textStyle="bold"
         android:layout_marginTop="1dp"
         android:layout_marginBottom="5dp" />
@@ -59,7 +59,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         app:passwordToggleEnabled="true"
-        app:boxBackgroundColor="@color/primaryLightColor"
+        app:boxBackgroundColor="@color/primaryColor"
         android:textColorHint="@color/primaryTextDarkColor2"
         app:hintTextColor="@color/primaryTextDarkColor2"
         app:boxStrokeColor="@color/primaryTextDarkColor2" >
@@ -82,23 +82,15 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:layout_gravity="center"
-        android:textColor="@color/pastelRed"
+        android:textColor="@color/error"
         android:textStyle="bold"
         android:layout_marginTop="1dp"
         android:layout_marginBottom="5dp" />
 
     <TableLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="30dp">
-
-    </TableLayout>
-
-    <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="25dp"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp">
 
@@ -110,13 +102,13 @@
                     android:textColor="@color/primaryTextDarkColor1" />
 
                 <TextView
-                    android:id="@+id/textViewSignIn"
+                    android:id="@+id/textViewSignUp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="start"
                     android:text="@string/textViewSignup"
-                    android:textColor="@color/primaryColor" />
+                    android:textColor="@color/buttonSecondary" />
 
                 <TextView
                     android:id="@+id/textViewForgotPassword"
@@ -125,13 +117,13 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:text="@string/textViewForgotPassword"
-                    android:textColor="@color/primaryColor"
+                    android:textColor="@color/buttonSecondary"
                     android:visibility="gone" />
         </TableRow>
     </TableLayout>
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/buttonLogIn"
+        android:id="@+id/buttonLogin"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

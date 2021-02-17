@@ -1,4 +1,4 @@
-package it.davidepalladino.airanalyzer.model.api;
+package it.davidepalladino.airanalyzer.model;
 
 public class Signup {
     private String id;

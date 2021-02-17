@@ -5,8 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".view.SplashActivity"
-    android:background="@color/primaryLightColor" >
+    tools:context=".view.activity.SplashActivity"
+    android:background="@color/primaryColor" >
 
     <ImageView
         android:id="@+id/imageViewSplash"

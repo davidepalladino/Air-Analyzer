@@ -6,9 +6,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CheckField {
-    //TODO Check expression password
-    private static final String expressionPassword = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W]).{8,20})";
+    private static final String expressionUsername = "^[a-z0-9_-]{5,20}$";
+    private static final String expressionPassword = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&.#])[A-Za-z\\d@$!%*?&.#]{16,24}$";
     private static final String expressionEmail = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
+
+    public static boolean checkUsername(EditText editText) {
+        return checkSyntax(editText, expressionUsername);
+    }
 
     public static boolean checkPassword(EditText editText) {
         return checkSyntax(editText, expressionPassword);
