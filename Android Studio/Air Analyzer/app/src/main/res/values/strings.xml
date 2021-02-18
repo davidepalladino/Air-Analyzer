@@ -92,7 +92,7 @@
     <string name="menuItemRenameThisRoom">Rename this room</string>
     <string name="menuItemRemoveThisRoom">Remove this room</string>
     <string name="menuItemLogout">Logout</string>
-    <string name="toastNoMeasuresOnDate">No measures in this date!</string>
+    <string name="toastNoMeasuresOnDate">No measures in this date for room\u0020</string>
     <string name="dialogSignup">Your registration is nearly complete. Check you email to validate it.</string>
     <string name="dialogRenameRoom">Write the new name of this room. Empty field will not apply any change.</string>
     <string name="dialogRemoveRoom">Are you sure you want to remove this room? This operation will not delete all the measures read.</string>

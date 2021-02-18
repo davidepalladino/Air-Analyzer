@@ -30,7 +30,7 @@
                     android:id="@+id/imageGraphTemperature"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:src="@drawable/ic_icona___bar_graph"
+                    android:src="@drawable/ic_icona_bar_graph"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -104,7 +104,7 @@
                     android:id="@+id/imageGraphHumidity"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:src="@drawable/ic_icona___bar_graph"
+                    android:src="@drawable/ic_icona_bar_graph"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />

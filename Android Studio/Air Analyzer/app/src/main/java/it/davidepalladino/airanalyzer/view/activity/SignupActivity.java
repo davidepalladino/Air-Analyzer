@@ -2,11 +2,9 @@ package it.davidepalladino.airanalyzer.view.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -25,9 +23,8 @@ import android.widget.Toast;
 import it.davidepalladino.airanalyzer.R;
 import it.davidepalladino.airanalyzer.control.DatabaseService;
 import it.davidepalladino.airanalyzer.control.Setting;
-import it.davidepalladino.airanalyzer.control.TextWatcherField;
+import it.davidepalladino.airanalyzer.view.widget.TextWatcherField;
 import it.davidepalladino.airanalyzer.model.Signup;
-import it.davidepalladino.airanalyzer.view.dialog.RemoveRoomDialog;
 import it.davidepalladino.airanalyzer.view.dialog.SignupDialog;
 
 import static it.davidepalladino.airanalyzer.control.CheckField.*;

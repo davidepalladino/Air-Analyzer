@@ -26,19 +26,23 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabbarRoom"
+        android:id="@+id/tabLayoutRooms"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         app:tabGravity="center"
-        app:tabMode="scrollable" >
-
-    </com.google.android.material.tabs.TabLayout>
+        app:tabMode="scrollable" />
 
     <FrameLayout
-        android:id="@+id/frameRoom"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent">
+
+        <it.davidepalladino.airanalyzer.view.widget.ViewPagerRoom
+            android:id="@+id/viewPagerRooms"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </it.davidepalladino.airanalyzer.view.widget.ViewPagerRoom>
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/floatingActionButtonCalendar"

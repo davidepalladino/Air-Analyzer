@@ -19,7 +19,7 @@ import android.widget.Toast;
 import it.davidepalladino.airanalyzer.R;
 import it.davidepalladino.airanalyzer.control.DatabaseService;
 import it.davidepalladino.airanalyzer.control.Setting;
-import it.davidepalladino.airanalyzer.control.TextWatcherField;
+import it.davidepalladino.airanalyzer.view.widget.TextWatcherField;
 import it.davidepalladino.airanalyzer.model.Login;
 
 import static it.davidepalladino.airanalyzer.control.CheckField.*;

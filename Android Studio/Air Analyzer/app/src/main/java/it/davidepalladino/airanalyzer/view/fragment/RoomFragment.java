@@ -28,6 +28,7 @@ import it.davidepalladino.airanalyzer.control.DatabaseService;
 import it.davidepalladino.airanalyzer.control.Setting;
 import it.davidepalladino.airanalyzer.model.Date;
 import it.davidepalladino.airanalyzer.model.MeasureAverage;
+import it.davidepalladino.airanalyzer.model.Room;
 import it.davidepalladino.airanalyzer.view.activity.LoginActivity;
 
 import static android.content.Context.BIND_AUTO_CREATE;
@@ -38,27 +39,26 @@ public class RoomFragment extends Fragment {
     private static final String BROADCAST_REQUEST_CODE_MASTER = "RoomFragment";
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE = "GetDateAVG";
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_LOGIN = "Login";
-    public static final String BUNDLE_ROOM_ID = "ROOM_ID";
+    public static final String BUNDLE_ROOM = "ROOM";
     public static final String BUNDLE_DATE = "DATE";
     public static final String INTENT_MEASURE = "MEASURE";
-    private static final int MAX_ATTEMPS = 5;
+    private static final int MAX_ATTEMPS = 3;
 
     private GraphView graphTemperature;
     private GraphView graphHumidity;
 
-    private String roomID;
-
     private Setting setting;
+    private Room room;
     private Date date;
 
     private int attempts = 1;
 
-    public static RoomFragment newInstance(String roomID, Date date) {
+    public static RoomFragment newInstance(Room room, Date date) {
         RoomFragment fragment = new RoomFragment();
 
         Bundle args = new Bundle();
-        args.putString("ROOM_ID", roomID);
-        args.putParcelable("DATE", date);
+        args.putParcelable(BUNDLE_ROOM, room);
+        args.putParcelable(BUNDLE_DATE, date);
         fragment.setArguments(args);
 
         return fragment;
@@ -68,7 +68,7 @@ public class RoomFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            roomID = getArguments().getString(BUNDLE_ROOM_ID);
+            room = getArguments().getParcelable(BUNDLE_ROOM);
             date = getArguments().getParcelable(BUNDLE_DATE);
         }
     }
@@ -114,7 +114,7 @@ public class RoomFragment extends Fragment {
             DatabaseService.LocalBinder localBinder = (DatabaseService.LocalBinder) service;
             databaseService = localBinder.getService();
 
-            databaseService.getMeasureDateAverage(setting.readToken(), roomID, date, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE);
+            databaseService.getMeasureDateAverage(setting.readToken(), room.getId(), date, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE + room.getId());
         }
 
         @Override
@@ -131,21 +131,21 @@ public class RoomFragment extends Fragment {
                     switch (statusCode) {
                         case 200:
                             // GET DATE BROADCAST
-                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE) == 0) {
+                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE + room.getId()) == 0) {
                                 ArrayList<MeasureAverage> listMeasures = intentFrom.getParcelableArrayListExtra(INTENT_MEASURE);
 
                                 if (listMeasures.isEmpty() && attempts <= MAX_ATTEMPS) {
                                     new Handler().postDelayed(new Runnable() {
                                         @Override
                                         public void run() {
-                                            databaseService.getMeasureDateAverage(setting.readToken(), roomID, date, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE);
+                                            databaseService.getMeasureDateAverage(setting.readToken(), room.getId(), date, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE + room.getId());
                                             attempts++;
                                         }
                                     }, 1000);
 
                                     return;
                                 } else if (attempts == MAX_ATTEMPS + 1) {
-                                    Toast.makeText(getContext(), getString(R.string.toastNoMeasuresOnDate), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getContext(), getString(R.string.toastNoMeasuresOnDate) + "'" + room.getName() + "'", Toast.LENGTH_LONG).show();
                                     return;
                                 }
 

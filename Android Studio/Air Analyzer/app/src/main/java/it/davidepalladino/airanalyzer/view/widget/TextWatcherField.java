@@ -1,4 +1,4 @@
-package it.davidepalladino.airanalyzer.control;
+package it.davidepalladino.airanalyzer.view.widget;
 
 import android.text.Editable;
 import android.text.TextWatcher;
