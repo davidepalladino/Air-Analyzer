@@ -22,8 +22,8 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import it.davidepalladino.airanalyzer.R;
 import it.davidepalladino.airanalyzer.control.DatabaseService;
@@ -46,9 +46,9 @@ public class RoomFragment extends Fragment {
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE = "GetDateAverage";
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_LOGIN = "Login";
     public static final String BUNDLE_ROOM = "ROOM";
-    public static final String BUNDLE_DATE = "DATE";
+    public static final String BUNDLE_DATE_RAW = "DATE_RAW";
     public static final String INTENT_MEASURE = "MEASURE";
-    private static final int MAX_ATTEMPS = 3;
+    private static final int MAX_ATTEMPTS = 3;
 
     private GraphView graphTemperature;
     private GraphView graphHumidity;
@@ -60,19 +60,19 @@ public class RoomFragment extends Fragment {
 
     private Setting setting;
     private Room room;
-    private Date date;
+    private Calendar calendarSelected;
 
     private ArrayList<MeasureFull> listMeasuresDateFull;
     private ArrayList<MeasureAverage> listMeasuresDateAverage;
 
     private int attempts = 1;
 
-    public static RoomFragment newInstance(Room room, Date date) {
+    public static RoomFragment newInstance(Room room, Long dateRaw) {
         RoomFragment fragment = new RoomFragment();
 
         Bundle args = new Bundle();
         args.putParcelable(BUNDLE_ROOM, room);
-        args.putParcelable(BUNDLE_DATE, date);
+        args.putLong(BUNDLE_DATE_RAW, dateRaw);
         fragment.setArguments(args);
 
         return fragment;
@@ -83,7 +83,8 @@ public class RoomFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             room = getArguments().getParcelable(BUNDLE_ROOM);
-            date = getArguments().getParcelable(BUNDLE_DATE);
+            calendarSelected = Calendar.getInstance();
+            calendarSelected.setTimeInMillis(getArguments().getLong(BUNDLE_DATE_RAW));
         }
     }
 
@@ -123,7 +124,11 @@ public class RoomFragment extends Fragment {
         textViewLatestHumidity = (TextView) layoutFragment.findViewById(R.id.textViewLatestHumidity);
         textViewLatestTime = (TextView) layoutFragment.findViewById(R.id.textViewLatestTime);
 
-        textViewDate.setText(date.year + getString(R.string.dateSeparator) + date.month + getString(R.string.dateSeparator) + date.day);
+        textViewDate.setText(
+                String.valueOf(calendarSelected.get(Calendar.DAY_OF_MONTH)) +
+                String.valueOf(calendarSelected.get(Calendar.MONTH) + 1) +
+                String.valueOf(calendarSelected.get(Calendar.YEAR))
+        );
 
         return layoutFragment;
     }
@@ -135,8 +140,8 @@ public class RoomFragment extends Fragment {
             DatabaseService.LocalBinder localBinder = (DatabaseService.LocalBinder) service;
             databaseService = localBinder.getService();
 
-            databaseService.getMeasuresDateFull(setting.readToken(), room.getId(), date, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_FULL + room.getId());
-            databaseService.getMeasuresDateAverage(setting.readToken(), room.getId(), date, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId());
+            databaseService.getMeasuresDateFull(setting.readToken(), room.getId(), calendarSelected, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_FULL + room.getId());
+            databaseService.getMeasuresDateAverage(setting.readToken(), room.getId(), calendarSelected, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId());
         }
 
         @Override
@@ -163,13 +168,13 @@ public class RoomFragment extends Fragment {
                                     textViewLatestHumidity.setTypeface(null, NORMAL);
 
                                     textViewLatestTemperature.setText(
-                                            String.valueOf(listMeasuresDateFull.get(listMeasuresDateFull.size() - 1).getTemperature())
-                                            + " °C"
+                                            String.valueOf(listMeasuresDateFull.get(listMeasuresDateFull.size() - 1).getTemperature()) +
+                                            " °C"
                                     );
 
                                     textViewLatestHumidity.setText(
-                                            String.valueOf(listMeasuresDateFull.get(listMeasuresDateFull.size() - 1).getHumidity())
-                                            + " %"
+                                            String.valueOf(listMeasuresDateFull.get(listMeasuresDateFull.size() - 1).getHumidity()) +
+                                            " %"
                                     );
 
                                     textViewLatestTime.setText(getString(R.string.textViewLatestMeasurementAt) + listMeasuresDateFull.get(listMeasuresDateFull.size() - 1).getDateAndTime().substring(11, 16));
@@ -186,7 +191,7 @@ public class RoomFragment extends Fragment {
                                 listMeasuresDateAverage = intentFrom.getParcelableArrayListExtra(INTENT_MEASURE);
 
                                 //TODO: Implementing the check from cache file.
-                                generateBarGraph(listMeasuresDateAverage, date);
+                                generateBarGraph(listMeasuresDateAverage, calendarSelected);
 
                             // LOGIN BROADCAST
                             } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_LOGIN) == 0) {
@@ -197,7 +202,7 @@ public class RoomFragment extends Fragment {
                             break;
                         case 204:
                         case 401:
-                            if (attempts <= MAX_ATTEMPS) {
+                            if (attempts <= MAX_ATTEMPTS) {
                                 new Handler().postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
@@ -227,18 +232,18 @@ public class RoomFragment extends Fragment {
 
     }
 
-    private void generateBarGraph(ArrayList<MeasureAverage> list, Date date) {
-        if (list.isEmpty() && attempts <= MAX_ATTEMPS) {
+    private void generateBarGraph(ArrayList<MeasureAverage> list, Calendar calendarSelected) {
+        if (list.isEmpty() && attempts <= MAX_ATTEMPTS) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    databaseService.getMeasuresDateAverage(setting.readToken(), room.getId(), date, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId());
+                    databaseService.getMeasuresDateAverage(setting.readToken(), room.getId(), calendarSelected, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId());
                     attempts++;
                 }
             }, 1000);
 
             return;
-        } else if (attempts == MAX_ATTEMPS + 1) {
+        } else if (attempts == MAX_ATTEMPTS + 1) {
             Toast.makeText(getContext(), getString(R.string.toastNoMeasuresOnDate) + "'" + room.getName() + "'", Toast.LENGTH_LONG).show();
             return;
         }

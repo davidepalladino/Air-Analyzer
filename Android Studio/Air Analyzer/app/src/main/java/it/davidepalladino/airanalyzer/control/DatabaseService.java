@@ -7,6 +7,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import it.davidepalladino.airanalyzer.model.Date;
 import it.davidepalladino.airanalyzer.model.Login;
@@ -206,8 +207,15 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void getMeasuresDateFull(String token, String roomID, Date date, String requestCode) {
-        Call<ArrayList<MeasureFull>> call = api.getMeasuresDateFull("Bearer " + token, roomID, date.day.toString(), date.month.toString(), date.year.toString());
+    public void getMeasuresDateFull(String token, String roomID, Calendar calendarSelected, String requestCode) {
+        Call<ArrayList<MeasureFull>> call = api.getMeasuresDateFull(
+                "Bearer " + token,
+                roomID,
+                String.valueOf(calendarSelected.get(Calendar.DAY_OF_MONTH)),
+                String.valueOf(calendarSelected.get(Calendar.MONTH) + 1),
+                String.valueOf(calendarSelected.get(Calendar.YEAR))
+        );
+
         call.enqueue(new Callback<ArrayList<MeasureFull>>() {
             @Override
             public void onResponse(Call<ArrayList<MeasureFull>> call, Response<ArrayList<MeasureFull>> response) {
@@ -227,8 +235,15 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void getMeasuresDateAverage(String token, String roomID, Date date, String requestCode) {
-        Call<ArrayList<MeasureAverage>> call = api.getMeasuresDateAverage("Bearer " + token, roomID, date.day.toString(), date.month.toString(), date.year.toString());
+    public void getMeasuresDateAverage(String token, String roomID, Calendar calendarSelected, String requestCode) {
+        Call<ArrayList<MeasureAverage>> call = api.getMeasuresDateAverage(
+                "Bearer " + token,
+                roomID,
+                String.valueOf(calendarSelected.get(Calendar.DAY_OF_MONTH)),
+                String.valueOf(calendarSelected.get(Calendar.MONTH) + 1),
+                String.valueOf(calendarSelected.get(Calendar.YEAR))
+        );
+
         call.enqueue(new Callback<ArrayList<MeasureAverage>>() {
             @Override
             public void onResponse(Call<ArrayList<MeasureAverage>> call, Response<ArrayList<MeasureAverage>> response) {

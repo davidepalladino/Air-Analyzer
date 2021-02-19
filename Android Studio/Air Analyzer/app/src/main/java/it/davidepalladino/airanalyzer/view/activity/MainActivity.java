@@ -37,7 +37,6 @@ import it.davidepalladino.airanalyzer.R;
 import it.davidepalladino.airanalyzer.control.DatabaseService;
 import it.davidepalladino.airanalyzer.view.widget.ViewPagerRoom;
 import it.davidepalladino.airanalyzer.control.Setting;
-import it.davidepalladino.airanalyzer.model.Date;
 import it.davidepalladino.airanalyzer.model.Room;
 import it.davidepalladino.airanalyzer.view.dialog.RemoveRoomDialog;
 import it.davidepalladino.airanalyzer.view.dialog.RenameRoomDialog;
@@ -54,18 +53,17 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_LOGIN = "Login";
     private static final String TAB_ADD_ID = "Add";
     private static final String TAB_ADD_NAME = "+";
-    private static final int MAX_ATTEMPS = 3;
+    private static final int MAX_ATTEMPTS = 3;
 
     private Toolbar toolbarMain;
     private TabLayout tabLayoutRooms;
     private ViewPagerRoom viewPagerRooms;
     private ExtendedFloatingActionButton floatingActionButtonCalendar;
 
-    private Calendar calendar;
+    private Calendar calendarSelected;
 
     private Setting setting;
     private Room roomSelected;
-    protected Date dateSelected;
 
     private int attempts = 1;
     private int currentPage = 0;
@@ -95,9 +93,9 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 new DatePickerDialog(
                         MainActivity.this,
                         MainActivity.this,
-                        calendar.get(Calendar.YEAR),
-                        calendar.get(Calendar.MONTH),
-                        calendar.get(Calendar.DAY_OF_MONTH)
+                        calendarSelected.get(Calendar.YEAR),
+                        calendarSelected.get(Calendar.MONTH),
+                        calendarSelected.get(Calendar.DAY_OF_MONTH)
                 ).show();
             }
         });
@@ -110,12 +108,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         roomSelected = new Room();
 
-        calendar = Calendar.getInstance();
-        dateSelected = new Date(
-                String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)),
-                String.valueOf(calendar.get(Calendar.MONTH) + 1),
-                String.valueOf(calendar.get(Calendar.YEAR))
-        );
+        calendarSelected = Calendar.getInstance();
     }
 
     @Override
@@ -138,13 +131,9 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.MONTH, month);
-        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-        dateSelected.day = String.valueOf(dayOfMonth);
-        dateSelected.month = String.valueOf(month + 1);
-        dateSelected.year = String.valueOf(year);
+        calendarSelected.set(Calendar.YEAR, year);
+        calendarSelected.set(Calendar.MONTH, month);
+        calendarSelected.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
         viewPagerRooms.getAdapter().notifyDataSetChanged();
         viewPagerRooms.setCurrentItem(currentPage);
@@ -274,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         @Override
         public Fragment getItem(int position) {
             if (position != positionAddTab) {
-                return RoomFragment.newInstance(new Room(tabsID.get(position), tabsName.get(position)), dateSelected);
+                return RoomFragment.newInstance(new Room(tabsID.get(position), tabsName.get(position)), calendarSelected.getTimeInMillis());
             } else {
                 return AddRoomFragment.newInstance("", "");
             }
@@ -326,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                             if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM) == 0) {
                                 ArrayList<Room> listRooms = intentFrom.getParcelableArrayListExtra(INTENT_ROOM);
 
-                                if (listRooms.isEmpty() && attempts <= MAX_ATTEMPS) {
+                                if (listRooms.isEmpty() && attempts <= MAX_ATTEMPTS) {
                                     new Handler().postDelayed(new Runnable() {
                                         @Override
                                         public void run() {
@@ -360,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                             break;
                         case 204:
                         case 401:
-                            if (attempts <= MAX_ATTEMPS) {
+                            if (attempts <= MAX_ATTEMPTS) {
                                 new Handler().postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
