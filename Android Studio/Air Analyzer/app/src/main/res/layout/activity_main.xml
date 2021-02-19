@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/primaryColor"
-        android:elevation="5dp"
+        android:elevation="4dp"
         app:contentInsetStartWithNavigation="0dp"
         app:contentInsetEnd="0dp"
         app:contentInsetLeft="0dp"
@@ -27,11 +27,13 @@
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayoutRooms"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:elevation="4dp"
         app:tabGravity="center"
-        app:tabMode="scrollable" />
+        app:tabMode="scrollable"
+        android:layout_marginBottom="3dp"/>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -41,13 +43,12 @@
             android:id="@+id/viewPagerRooms"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
         </it.davidepalladino.airanalyzer.view.widget.ViewPagerRoom>
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/floatingActionButtonCalendar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="bottom|right"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"

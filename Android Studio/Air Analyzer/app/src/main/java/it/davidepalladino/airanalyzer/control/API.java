@@ -3,6 +3,7 @@ import java.util.ArrayList;
 
 import it.davidepalladino.airanalyzer.model.MeasureAverage;
 import it.davidepalladino.airanalyzer.model.Login;
+import it.davidepalladino.airanalyzer.model.MeasureFull;
 import it.davidepalladino.airanalyzer.model.Room;
 import it.davidepalladino.airanalyzer.model.Signup;
 import retrofit2.Call;
@@ -14,7 +15,7 @@ import retrofit2.http.Query;
 
 public interface API {
     String BASE_URL = "http://192.168.0.2:8008/";
-    //BASE_URL = "http://airanalyzer.servehttp.com:50208/";
+    //String BASE_URL = "http://airanalyzer.servehttp.com:50208/";
 
     @POST("api/login")
     Call<Login.Response> login(@Body Login login);
@@ -37,6 +38,9 @@ public interface API {
     @POST("api/airanalyzer/removeRoom")
     Call<Room.NoResponse> removeRoom(@Header("Authorization") String token, @Body Room room);
 
-    @GET("api/airanalyzer/getMeasureDateAVG")
-    Call<ArrayList<MeasureAverage>> getMeasureDateAVG(@Header("Authorization") String token, @Query("room") String room, @Query("day") String day, @Query("month") String month, @Query("year") String year);
+    @GET("api/airanalyzer/getMeasuresDateFull")
+    Call<ArrayList<MeasureFull>> getMeasuresDateFull(@Header("Authorization") String token, @Query("room") String room, @Query("day") String day, @Query("month") String month, @Query("year") String year);
+
+    @GET("api/airanalyzer/getMeasuresDateAverage")
+    Call<ArrayList<MeasureAverage>> getMeasuresDateAverage(@Header("Authorization") String token, @Query("room") String room, @Query("day") String day, @Query("month") String month, @Query("year") String year);
 }

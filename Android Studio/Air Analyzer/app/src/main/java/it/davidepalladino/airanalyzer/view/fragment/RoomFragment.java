@@ -15,12 +15,14 @@ import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import it.davidepalladino.airanalyzer.R;
@@ -28,16 +30,20 @@ import it.davidepalladino.airanalyzer.control.DatabaseService;
 import it.davidepalladino.airanalyzer.control.Setting;
 import it.davidepalladino.airanalyzer.model.Date;
 import it.davidepalladino.airanalyzer.model.MeasureAverage;
+import it.davidepalladino.airanalyzer.model.MeasureFull;
 import it.davidepalladino.airanalyzer.model.Room;
 import it.davidepalladino.airanalyzer.view.activity.LoginActivity;
 
 import static android.content.Context.BIND_AUTO_CREATE;
+import static android.graphics.Typeface.ITALIC;
+import static android.graphics.Typeface.NORMAL;
 import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE;
 import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
 
 public class RoomFragment extends Fragment {
     private static final String BROADCAST_REQUEST_CODE_MASTER = "RoomFragment";
-    private static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE = "GetDateAVG";
+    private static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_FULL = "GetDateFull";
+    private static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE = "GetDateAverage";
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_LOGIN = "Login";
     public static final String BUNDLE_ROOM = "ROOM";
     public static final String BUNDLE_DATE = "DATE";
@@ -47,9 +53,17 @@ public class RoomFragment extends Fragment {
     private GraphView graphTemperature;
     private GraphView graphHumidity;
 
+    private TextView textViewDate;
+    private TextView textViewLatestTemperature;
+    private TextView textViewLatestHumidity;
+    private TextView textViewLatestTime;
+
     private Setting setting;
     private Room room;
     private Date date;
+
+    private ArrayList<MeasureFull> listMeasuresDateFull;
+    private ArrayList<MeasureAverage> listMeasuresDateAverage;
 
     private int attempts = 1;
 
@@ -104,6 +118,13 @@ public class RoomFragment extends Fragment {
         graphTemperature = (GraphView) layoutFragment.findViewById(R.id.graphTemperature);
         graphHumidity = (GraphView) layoutFragment.findViewById(R.id.graphHumidity);
 
+        textViewDate = (TextView) layoutFragment.findViewById(R.id.textViewDate);
+        textViewLatestTemperature = (TextView) layoutFragment.findViewById(R.id.textViewLatestTemperature);
+        textViewLatestHumidity = (TextView) layoutFragment.findViewById(R.id.textViewLatestHumidity);
+        textViewLatestTime = (TextView) layoutFragment.findViewById(R.id.textViewLatestTime);
+
+        textViewDate.setText(date.year + getString(R.string.dateSeparator) + date.month + getString(R.string.dateSeparator) + date.day);
+
         return layoutFragment;
     }
 
@@ -114,7 +135,8 @@ public class RoomFragment extends Fragment {
             DatabaseService.LocalBinder localBinder = (DatabaseService.LocalBinder) service;
             databaseService = localBinder.getService();
 
-            databaseService.getMeasureDateAverage(setting.readToken(), room.getId(), date, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE + room.getId());
+            databaseService.getMeasuresDateFull(setting.readToken(), room.getId(), date, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_FULL + room.getId());
+            databaseService.getMeasuresDateAverage(setting.readToken(), room.getId(), date, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId());
         }
 
         @Override
@@ -130,34 +152,41 @@ public class RoomFragment extends Fragment {
                     int statusCode = intentFrom.getIntExtra(DatabaseService.STATUS_CODE, 0);
                     switch (statusCode) {
                         case 200:
-                            // GET DATE BROADCAST
-                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE + room.getId()) == 0) {
-                                ArrayList<MeasureAverage> listMeasures = intentFrom.getParcelableArrayListExtra(INTENT_MEASURE);
+                            // GET DATE FULL BROADCAST
+                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_FULL + room.getId()) == 0) {
+                                listMeasuresDateFull = intentFrom.getParcelableArrayListExtra(INTENT_MEASURE);
 
-                                if (listMeasures.isEmpty() && attempts <= MAX_ATTEMPS) {
-                                    new Handler().postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            databaseService.getMeasureDateAverage(setting.readToken(), room.getId(), date, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE + room.getId());
-                                            attempts++;
-                                        }
-                                    }, 1000);
+                                //TODO: Implementing the check from cache file.
 
-                                    return;
-                                } else if (attempts == MAX_ATTEMPS + 1) {
-                                    Toast.makeText(getContext(), getString(R.string.toastNoMeasuresOnDate) + "'" + room.getName() + "'", Toast.LENGTH_LONG).show();
-                                    return;
+                                if (!listMeasuresDateFull.isEmpty()) {
+                                    textViewLatestTemperature.setTypeface(null, NORMAL);
+                                    textViewLatestHumidity.setTypeface(null, NORMAL);
+
+                                    textViewLatestTemperature.setText(
+                                            String.valueOf(listMeasuresDateFull.get(listMeasuresDateFull.size() - 1).getTemperature())
+                                            + " °C"
+                                    );
+
+                                    textViewLatestHumidity.setText(
+                                            String.valueOf(listMeasuresDateFull.get(listMeasuresDateFull.size() - 1).getHumidity())
+                                            + " %"
+                                    );
+
+                                    textViewLatestTime.setText(getString(R.string.textViewLatestMeasurementAt) + listMeasuresDateFull.get(listMeasuresDateFull.size() - 1).getDateAndTime().substring(11, 16));
+                                } else {
+                                    textViewLatestTemperature.setTypeface(null, ITALIC);
+                                    textViewLatestHumidity.setTypeface(null, ITALIC);
+
+                                    textViewLatestTemperature.setText(getString(R.string.textViewNone));
+                                    textViewLatestHumidity.setText(getString(R.string.textViewNone));
                                 }
 
-                                /* Temeperature */
-                                BarGraphSeries<DataPoint> seriesTemperature = new BarGraphSeries<DataPoint>(getDataPointTemperatureAVG(listMeasures));
-                                drawBarGraph(graphTemperature, seriesTemperature);
+                            // GET DATE AVERAGE BROADCAST
+                            } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId()) == 0) {
+                                listMeasuresDateAverage = intentFrom.getParcelableArrayListExtra(INTENT_MEASURE);
 
-                                /* Humidity */
-                                BarGraphSeries<DataPoint> seriesHumidity = new BarGraphSeries<DataPoint>(getDataPointHumidityAVG(listMeasures));
-                                drawBarGraph(graphHumidity, seriesHumidity);
-
-                                attempts = 1;
+                                //TODO: Implementing the check from cache file.
+                                generateBarGraph(listMeasuresDateAverage, date);
 
                             // LOGIN BROADCAST
                             } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_LOGIN) == 0) {
@@ -185,7 +214,6 @@ public class RoomFragment extends Fragment {
                             break;
                         case 404:
                         case 500:
-                            Toast.makeText(getActivity(), getString(R.string.toastServerOffline), Toast.LENGTH_LONG).show();
                             break;
                         default:
                             break;
@@ -194,6 +222,37 @@ public class RoomFragment extends Fragment {
             }
         }
     };
+
+    private void generateLineGraph(ArrayList<MeasureFull> list, Date date) {
+
+    }
+
+    private void generateBarGraph(ArrayList<MeasureAverage> list, Date date) {
+        if (list.isEmpty() && attempts <= MAX_ATTEMPS) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    databaseService.getMeasuresDateAverage(setting.readToken(), room.getId(), date, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId());
+                    attempts++;
+                }
+            }, 1000);
+
+            return;
+        } else if (attempts == MAX_ATTEMPS + 1) {
+            Toast.makeText(getContext(), getString(R.string.toastNoMeasuresOnDate) + "'" + room.getName() + "'", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        attempts = 1;
+
+        /* Temeperature */
+        BarGraphSeries<DataPoint> seriesTemperature = new BarGraphSeries<DataPoint>(getDataPointTemperatureAVG(list));
+        drawBarGraph(graphTemperature, seriesTemperature);
+
+        /* Humidity */
+        BarGraphSeries<DataPoint> seriesHumidity = new BarGraphSeries<DataPoint>(getDataPointHumidityAVG(list));
+        drawBarGraph(graphHumidity, seriesHumidity);
+    }
 
     private DataPoint[] getDataPointTemperatureAVG(ArrayList<MeasureAverage> listMeasures) {
         DataPoint[] dataPoints = new DataPoint[listMeasures.size()];
@@ -214,7 +273,7 @@ public class RoomFragment extends Fragment {
     }
 
     private void drawBarGraph(GraphView graph, BarGraphSeries<DataPoint> series) {
-        series.setSpacing(50);
+        series.setSpacing(25);
 
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);

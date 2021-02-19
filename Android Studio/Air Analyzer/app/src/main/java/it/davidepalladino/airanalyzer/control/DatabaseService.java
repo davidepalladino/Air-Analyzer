@@ -9,8 +9,9 @@ import android.util.Log;
 import java.util.ArrayList;
 
 import it.davidepalladino.airanalyzer.model.Date;
-import it.davidepalladino.airanalyzer.model.MeasureAverage;
 import it.davidepalladino.airanalyzer.model.Login;
+import it.davidepalladino.airanalyzer.model.MeasureAverage;
+import it.davidepalladino.airanalyzer.model.MeasureFull;
 import it.davidepalladino.airanalyzer.model.Room;
 import it.davidepalladino.airanalyzer.model.Signup;
 import retrofit2.Call;
@@ -19,8 +20,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_ROOM;
 import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
-import static it.davidepalladino.airanalyzer.view.activity.MainActivity.INTENT_ROOM;
 import static it.davidepalladino.airanalyzer.view.fragment.RoomFragment.INTENT_MEASURE;
 
 public class DatabaseService extends Service {
@@ -86,7 +87,6 @@ public class DatabaseService extends Service {
 
             @Override
             public void onFailure(Call<Login.Response> call, Throwable t) {
-
             }
         });
     }
@@ -206,8 +206,29 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void getMeasureDateAverage(String token, String roomID, Date date, String requestCode) {
-        Call<ArrayList<MeasureAverage>> call = api.getMeasureDateAVG("Bearer " + token, roomID, date.day.toString(), date.month.toString(), date.year.toString());
+    public void getMeasuresDateFull(String token, String roomID, Date date, String requestCode) {
+        Call<ArrayList<MeasureFull>> call = api.getMeasuresDateFull("Bearer " + token, roomID, date.day.toString(), date.month.toString(), date.year.toString());
+        call.enqueue(new Callback<ArrayList<MeasureFull>>() {
+            @Override
+            public void onResponse(Call<ArrayList<MeasureFull>> call, Response<ArrayList<MeasureFull>> response) {
+                ArrayList<MeasureFull> listMeasures = response.body();
+
+                Intent intentBroadcast = new Intent(BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE, requestCode);
+                intentBroadcast.putExtra(STATUS_CODE, response.code());
+                intentBroadcast.putParcelableArrayListExtra(INTENT_MEASURE, listMeasures);
+                sendBroadcast(intentBroadcast);
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<MeasureFull>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void getMeasuresDateAverage(String token, String roomID, Date date, String requestCode) {
+        Call<ArrayList<MeasureAverage>> call = api.getMeasuresDateAverage("Bearer " + token, roomID, date.day.toString(), date.month.toString(), date.year.toString());
         call.enqueue(new Callback<ArrayList<MeasureAverage>>() {
             @Override
             public void onResponse(Call<ArrayList<MeasureAverage>> call, Response<ArrayList<MeasureAverage>> response) {
@@ -222,7 +243,6 @@ public class DatabaseService extends Service {
 
             @Override
             public void onFailure(Call<ArrayList<MeasureAverage>> call, Throwable t) {
-
             }
         });
     }

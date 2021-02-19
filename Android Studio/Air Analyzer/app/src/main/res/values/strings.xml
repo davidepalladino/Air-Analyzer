@@ -88,7 +88,7 @@
     <string name="textViewAverage">Average</string>
     <string name="textViewFull">Full</string>
     <string name="textViewSeparator">|</string>
-    <string name="textViewLastMeasurement">Last measurement</string>
+    <string name="textViewLatestMeasurement">Latest measurement</string>
     <string name="menuItemRenameThisRoom">Rename this room</string>
     <string name="menuItemRemoveThisRoom">Remove this room</string>
     <string name="menuItemLogout">Logout</string>
@@ -99,4 +99,8 @@
     <string name="buttonOk">OK</string>
     <string name="buttonCancel">Cancel</string>
     <string name="textViewSignupComplete">Sign up complete</string>
+    <string name="textViewNone">None</string>
+    <string name="textViewLatestMeasurementAt">at the\u0020</string>
+    <string name="textViewDateSelected">Date selected</string>
+    <string name="dateSeparator">/</string>
 </resources>
