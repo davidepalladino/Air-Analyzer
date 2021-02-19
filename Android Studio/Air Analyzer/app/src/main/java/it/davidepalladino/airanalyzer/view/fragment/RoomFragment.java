@@ -22,6 +22,7 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -124,13 +125,15 @@ public class RoomFragment extends Fragment {
         textViewLatestHumidity = (TextView) layoutFragment.findViewById(R.id.textViewLatestHumidity);
         textViewLatestTime = (TextView) layoutFragment.findViewById(R.id.textViewLatestTime);
 
-        textViewDate.setText(
-                String.valueOf(calendarSelected.get(Calendar.DAY_OF_MONTH)) +
-                String.valueOf(calendarSelected.get(Calendar.MONTH) + 1) +
-                String.valueOf(calendarSelected.get(Calendar.YEAR))
-        );
+        textViewDate.setText(getFormattedDate(calendarSelected));
 
         return layoutFragment;
+    }
+
+    private String getFormattedDate(Calendar calendarSelected) {
+        SimpleDateFormat formatter = new SimpleDateFormat(getString(R.string.format_date));
+        String date = formatter.format(calendarSelected.getTime());
+        return date;
     }
 
     public DatabaseService databaseService;
