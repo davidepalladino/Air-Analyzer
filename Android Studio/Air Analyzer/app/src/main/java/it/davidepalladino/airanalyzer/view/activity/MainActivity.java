@@ -232,9 +232,6 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         private ArrayList<String> tabsID;
         private ArrayList<String> tabsName;
-        private int[] tabsIcon = {
-
-        };
 
         public RoomPagerAdapter(FragmentManager fragmentManager, Activity activity, ArrayList<Room> listRooms) {
             super(fragmentManager);
@@ -284,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 if (tabsName.get(position) != null) {
                     return tabsID.get(position) + " | " + tabsName.get(position);
                 } else {
-                    SpannableString spannableString = new SpannableString(tabsID.get(position) + " | <NO NAME>");
+                    SpannableString spannableString = new SpannableString(tabsID.get(position) + getString(R.string.roomNoName));
                     spannableString.setSpan(new RelativeSizeSpan(0.6f), 4, 13, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                     return spannableString;

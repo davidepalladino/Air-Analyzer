@@ -21,4 +21,9 @@
     <style name="overflowButtonStyle" parent="Widget.AppCompat.ActionButton.Overflow">
         <item name="android:tint">@color/primaryTextDarkColor1</item>
     </style>
+
+    <style name="TabLayoutGraph" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">12sp</item>
+        <item name="textAllCaps">false</item>
+    </style>
 </resources>

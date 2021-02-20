@@ -38,8 +38,8 @@ public interface API {
     @POST("api/airanalyzer/removeRoom")
     Call<Room.NoResponse> removeRoom(@Header("Authorization") String token, @Body Room room);
 
-    @GET("api/airanalyzer/getMeasuresDateFull")
-    Call<ArrayList<MeasureFull>> getMeasuresDateFull(@Header("Authorization") String token, @Query("room") String room, @Query("day") String day, @Query("month") String month, @Query("year") String year);
+    @GET("api/airanalyzer/getMeasureDateLatest")
+    Call<MeasureFull> getMeasureDateLatest(@Header("Authorization") String token, @Query("room") String room, @Query("day") String day, @Query("month") String month, @Query("year") String year);
 
     @GET("api/airanalyzer/getMeasuresDateAverage")
     Call<ArrayList<MeasureAverage>> getMeasuresDateAverage(@Header("Authorization") String token, @Query("room") String room, @Query("day") String day, @Query("month") String month, @Query("year") String year);

@@ -9,7 +9,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import it.davidepalladino.airanalyzer.model.Date;
 import it.davidepalladino.airanalyzer.model.Login;
 import it.davidepalladino.airanalyzer.model.MeasureAverage;
 import it.davidepalladino.airanalyzer.model.MeasureFull;
@@ -21,9 +20,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_MEASURE;
 import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_ROOM;
 import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
-import static it.davidepalladino.airanalyzer.view.fragment.RoomFragment.INTENT_MEASURE;
 
 public class DatabaseService extends Service {
     private static final String DATABASE_SERVICE = "DATABASE_SERVICE";
@@ -207,8 +206,8 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void getMeasuresDateFull(String token, String roomID, Calendar calendarSelected, String requestCode) {
-        Call<ArrayList<MeasureFull>> call = api.getMeasuresDateFull(
+    public void getMeasureDateLatest(String token, String roomID, Calendar calendarSelected, String requestCode) {
+        Call<MeasureFull> call = api.getMeasureDateLatest(
                 "Bearer " + token,
                 roomID,
                 String.valueOf(calendarSelected.get(Calendar.DAY_OF_MONTH)),
@@ -216,20 +215,20 @@ public class DatabaseService extends Service {
                 String.valueOf(calendarSelected.get(Calendar.YEAR))
         );
 
-        call.enqueue(new Callback<ArrayList<MeasureFull>>() {
+        call.enqueue(new Callback<MeasureFull>() {
             @Override
-            public void onResponse(Call<ArrayList<MeasureFull>> call, Response<ArrayList<MeasureFull>> response) {
-                ArrayList<MeasureFull> listMeasures = response.body();
+            public void onResponse(Call<MeasureFull> call, Response<MeasureFull> response) {
+                MeasureFull measure = response.body();
 
                 Intent intentBroadcast = new Intent(BROADCAST);
                 intentBroadcast.putExtra(REQUEST_CODE, requestCode);
                 intentBroadcast.putExtra(STATUS_CODE, response.code());
-                intentBroadcast.putParcelableArrayListExtra(INTENT_MEASURE, listMeasures);
+                intentBroadcast.putExtra(INTENT_MEASURE, measure);
                 sendBroadcast(intentBroadcast);
             }
 
             @Override
-            public void onFailure(Call<ArrayList<MeasureFull>> call, Throwable t) {
+            public void onFailure(Call<MeasureFull> call, Throwable t) {
 
             }
         });
