@@ -149,8 +149,8 @@ public class DatabaseService extends Service {
         }
     }
 
-    public void getRoom(String token, String requestCode) {
-        Call<ArrayList<Room>> call = api.getRoom("Bearer " + token);
+    public void getRooms(String token, String requestCode) {
+        Call<ArrayList<Room>> call = api.getRooms("Bearer " + token);
         call.enqueue(new Callback<ArrayList<Room>>() {
             @Override
             public void onResponse(Call<ArrayList<Room>> call, Response<ArrayList<Room>> response) {

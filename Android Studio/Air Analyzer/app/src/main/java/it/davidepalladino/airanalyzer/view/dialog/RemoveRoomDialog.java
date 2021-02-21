@@ -16,7 +16,6 @@ import androidx.fragment.app.DialogFragment;
 
 import it.davidepalladino.airanalyzer.R;
 import it.davidepalladino.airanalyzer.control.DatabaseService;
-import it.davidepalladino.airanalyzer.control.Setting;
 import it.davidepalladino.airanalyzer.model.Room;
 
 import static android.content.Context.BIND_AUTO_CREATE;

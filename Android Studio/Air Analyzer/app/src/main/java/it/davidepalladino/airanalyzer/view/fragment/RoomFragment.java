@@ -16,7 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
@@ -37,6 +36,7 @@ import it.davidepalladino.airanalyzer.model.MeasureAverage;
 import it.davidepalladino.airanalyzer.model.MeasureFull;
 import it.davidepalladino.airanalyzer.model.Room;
 import it.davidepalladino.airanalyzer.view.activity.LoginActivity;
+import it.davidepalladino.airanalyzer.view.widget.Toast;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.graphics.Typeface.ITALIC;
@@ -52,7 +52,7 @@ public class RoomFragment extends Fragment {
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_LOGIN = "Login";
     public static final String BUNDLE_ROOM = "ROOM";
     public static final String BUNDLE_DATE_RAW = "DATE_RAW";
-    private static final int MAX_ATTEMPTS = 3;
+    private static final int MAX_ATTEMPTS_LOGIN = 3;
 
     private GraphView graphTemperature;
     private GraphView graphHumidity;
@@ -62,14 +62,18 @@ public class RoomFragment extends Fragment {
     private TextView textViewLatestHumidity;
     private TextView textViewLatestTime;
 
+    private Toast toast;
     private Setting setting;
     private Room room;
     private Calendar calendarSelected;
-
     private MeasureFull lastMeasureDate;
     private ArrayList<MeasureAverage> listMeasuresDateAverage;
 
-    private int attempts = 1;
+    private float minAverageTemperatureGraph = 100;
+    private float maxAverageTemperatureGraph = 0;
+    private float minAverageHumidityGraph = 100;
+    private float maxAverageHumidityGraph = 0;
+    private int attemptsLogin = 1;
 
     public static RoomFragment newInstance(Room room, Long dateRaw) {
         RoomFragment fragment = new RoomFragment();
@@ -95,6 +99,7 @@ public class RoomFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        toast = new Toast(getActivity(), getLayoutInflater());
         setting = new Setting(getContext());
     }
 
@@ -136,88 +141,90 @@ public class RoomFragment extends Fragment {
     private String getFormattedDate(Calendar calendarSelected) {
         SimpleDateFormat formatter = new SimpleDateFormat(getString(R.string.format_date));
         String date = formatter.format(calendarSelected.getTime());
+
         return date;
     }
 
     private void generateBarGraph(ArrayList<MeasureAverage> listMeasures) {
-        if (listMeasures.isEmpty() && attempts <= MAX_ATTEMPTS) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    databaseService.getMeasuresDateAverage(setting.readToken(), room.getId(), calendarSelected, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId());
-                    attempts++;
-                }
-            }, 1000);
-
-            return;
-        } else if (attempts == MAX_ATTEMPTS + 1) {
-            Toast.makeText(getContext(), getString(R.string.toastNoMeasuresOnDate) + "'" + room.getName() + "'", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        attempts = 1;
-
         /* Temeperature */
         DataPoint[] dataPointsTemperature = new DataPoint[listMeasures.size()];
         for (int m = 0; m < listMeasures.size(); m++) {
             dataPointsTemperature[m] = new DataPoint(Integer.parseInt(listMeasures.get(m).getHour()), listMeasures.get(m).getTemperature());
+
+            if (listMeasures.get(m).getTemperature() > maxAverageTemperatureGraph) {
+                maxAverageTemperatureGraph = listMeasures.get(m).getTemperature();
+            }
+
+            if (listMeasures.get(m).getTemperature() < minAverageTemperatureGraph) {
+                minAverageTemperatureGraph = listMeasures.get(m).getTemperature();
+            }
         }
+
         BarGraphSeries<DataPoint> seriesTemperature = new BarGraphSeries<DataPoint>(dataPointsTemperature);
         seriesTemperature.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(getActivity(),
+                toast.makeToastBlue(R.drawable.ic_outline_info_24_toast,
                         getString(R.string.time) +
-                        String.format("%.0f:00", dataPoint.getX()) +
-                        "\n" +
-                        getString(R.string.temperature) +
-                        ": " +
-                        String.format("%.2f", dataPoint.getY()) +
-                        " °C", Toast.LENGTH_LONG).show();
+                                String.format("%.0f:00", dataPoint.getX()) +
+                                "\n" +
+                                getString(R.string.temperature) +
+                                ": " +
+                                String.format("%.2f", dataPoint.getY()) +
+                                " °C");
             }
         });
-        drawBarGraph(graphTemperature, seriesTemperature, " °C");
+
+        drawBarGraph(graphTemperature, seriesTemperature, minAverageTemperatureGraph, maxAverageTemperatureGraph, " °C");
 
         /* Humidity */
         DataPoint[] dataPointsHumidity = new DataPoint[listMeasures.size()];
         for (int m = 0; m < listMeasures.size(); m++) {
             dataPointsHumidity[m] = new DataPoint(Integer.parseInt(listMeasures.get(m).getHour()), listMeasures.get(m).getHumidity());
+
+            if (listMeasures.get(m).getHumidity() > maxAverageHumidityGraph) {
+                maxAverageHumidityGraph = listMeasures.get(m).getHumidity();
+            }
+
+            if (listMeasures.get(m).getHumidity() < minAverageHumidityGraph) {
+                minAverageHumidityGraph = listMeasures.get(m).getHumidity();
+            }
         }
         BarGraphSeries<DataPoint> seriesHumidity = new BarGraphSeries<DataPoint>(dataPointsHumidity);
         seriesHumidity.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(getActivity(),
-                        getString(R.string.time) +
-                        String.format("%.0f:00", dataPoint.getX()) +
-                        "\n" +
-                        getString(R.string.humidity) +
-                        ": " +
-                        String.format("%.2f", dataPoint.getY()) +
-                        "%", Toast.LENGTH_LONG).show();
+                toast.makeToastBlueMeasure(
+                        R.drawable.ic_outline_info_24_toast,
+                        getString(R.string.time),
+                        String.format("%.0f:00", dataPoint.getX()),
+                        getString(R.string.humidity),
+                        String.format("%.2f", dataPoint.getY()) + "%"
+                );
             }
         });
-        drawBarGraph(graphHumidity, seriesHumidity, " %");
+
+        drawBarGraph(graphHumidity, seriesHumidity, minAverageHumidityGraph, maxAverageHumidityGraph, " %");
     }
 
-    private void drawBarGraph(GraphView graph, BarGraphSeries<DataPoint> series, String yValue) {
-        series.setSpacing(25);
+    private void drawBarGraph(GraphView graph, BarGraphSeries<DataPoint> series, float yMinValue, float yMaxValue, String yStringValue) {
+        series.setSpacing(30);
+
+        graph.addSeries(series);
 
         graph.getViewport().setScalable(true);
         graph.getViewport().setScalableY(false);
 
         graph.getViewport().setScrollable(true);
-        graph.getViewport().setScalableY(false);
+        graph.getViewport().setScrollableY(false);
 
-        graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(24);
+        graph.getViewport().setMaxX(23);
+        graph.getViewport().setXAxisBoundsManual(true);
 
-        graph.getViewport().setYAxisBoundsManual(false);
-        graph.getViewport().setMinY(0);
-        graph.getViewport().setMaxY(100);
-
-        graph.addSeries(series);
+        graph.getViewport().setMinY(yMinValue - 1);
+        graph.getViewport().setMaxY(yMaxValue + 1);
+        graph.getViewport().setYAxisBoundsManual(true);
 
         graph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
             @Override
@@ -227,7 +234,7 @@ public class RoomFragment extends Fragment {
                     return super.formatLabel(value, isValueX) + ":00";
                 } else {
                     // Y value
-                    return super.formatLabel(value, isValueX) + yValue;
+                    return super.formatLabel(value, isValueX) + yStringValue;
                 }
             }
         });
@@ -261,50 +268,52 @@ public class RoomFragment extends Fragment {
                             if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_LAST + room.getId()) == 0) {
                                 lastMeasureDate = intentFrom.getParcelableExtra(INTENT_MEASURE);
 
-                                if (lastMeasureDate != null) {
-                                    textViewLatestTemperature.setTypeface(null, NORMAL);
-                                    textViewLatestHumidity.setTypeface(null, NORMAL);
+                                textViewLatestTemperature.setTypeface(null, NORMAL);
+                                textViewLatestHumidity.setTypeface(null, NORMAL);
 
-                                    textViewLatestTemperature.setText(
-                                            String.valueOf(lastMeasureDate.getTemperature()) +
-                                            " °C"
-                                    );
+                                textViewLatestTemperature.setText(
+                                        String.valueOf(lastMeasureDate.getTemperature()) +
+                                        " °C"
+                                );
 
-                                    textViewLatestHumidity.setText(
-                                            String.valueOf(lastMeasureDate.getHumidity()) +
-                                            " %"
-                                    );
+                                textViewLatestHumidity.setText(
+                                        String.valueOf(lastMeasureDate.getHumidity()) +
+                                        " %"
+                                );
 
-                                    textViewLatestTime.setText(getString(R.string.textViewLatestMeasurementAt) + lastMeasureDate.getDateAndTime().substring(11, 16));
-                                } else {
-                                    textViewLatestTemperature.setTypeface(null, ITALIC);
-                                    textViewLatestHumidity.setTypeface(null, ITALIC);
-
-                                    textViewLatestTemperature.setText(getString(R.string.textViewNone));
-                                    textViewLatestHumidity.setText(getString(R.string.textViewNone));
-                                }
+                                textViewLatestTime.setText(getString(R.string.textViewLatestMeasurementAt) + lastMeasureDate.getDateAndTime().substring(11, 16));
 
                             // GET DATE AVERAGE BROADCAST
                             } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId()) == 0) {
                                 listMeasuresDateAverage = intentFrom.getParcelableArrayListExtra(INTENT_MEASURE);
-
                                 generateBarGraph(listMeasuresDateAverage);
 
                             // LOGIN BROADCAST
                             } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_LOGIN) == 0) {
                                 setting.saveToken(intentFrom.getStringExtra(TOKEN));
-                                attempts = 1;
+                                attemptsLogin = 1;
                             }
 
                             break;
                         case 204:
+                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_LAST + room.getId()) == 0) {
+                                textViewLatestTemperature.setTypeface(null, ITALIC);
+                                textViewLatestHumidity.setTypeface(null, ITALIC);
+
+                                textViewLatestTemperature.setText(getString(R.string.textViewNone));
+                                textViewLatestHumidity.setText(getString(R.string.textViewNone));
+                            } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId()) == 0) {
+                                toast.makeToastBlue(R.drawable.ic_outline_info_24_toast, getString(R.string.toastNoMeasuresOnDate) + "'" + room.getName() + "'");
+                            }
+
+                            break;
                         case 401:
-                            if (attempts <= MAX_ATTEMPTS) {
+                            if (attemptsLogin <= MAX_ATTEMPTS_LOGIN) {
                                 new Handler().postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
                                         databaseService.login(setting.readLogin(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_LOGIN);
-                                        attempts++;
+                                        attemptsLogin++;
                                     }
                                 }, 1000);
                             } else {
@@ -316,6 +325,7 @@ public class RoomFragment extends Fragment {
                             break;
                         case 404:
                         case 500:
+                            toast.makeToastBlue(R.drawable.ic_baseline_error_24, getString(R.string.toastServerOffline));
                             break;
                         default:
                             break;

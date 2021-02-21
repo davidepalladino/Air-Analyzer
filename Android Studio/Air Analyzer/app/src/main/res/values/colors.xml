@@ -24,5 +24,8 @@
     <color name="buttonUnselectedPrimary">#FF808080</color>
     <color name="buttonUnselectedSecondary">#FFFFFFFF</color>
 
+    <color name="toastBlack">#101010</color>
+    <color name="toastBlue">#006db3</color>
+
     <color name="error">#FF5722</color>
 </resources>

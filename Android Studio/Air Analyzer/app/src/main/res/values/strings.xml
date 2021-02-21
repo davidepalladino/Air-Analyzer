@@ -50,13 +50,11 @@
     <string name="existsUsername">This username already exists. Try another!</string>
     <string name="existsEmail">This email already exists. Try another!</string>
 
-
-    <string name="toastErrorSignup">There are some error on the fields. Check them!</string>
-    <string name="toastErrorLogin">There are some error on the fields. Check them!</string>
-    <string name="toastServerOffline">Server offline. Try again later!</string>
-    <string name="toastUserNotValidated">This user is not validated!</string>
-    <string name="toastIncorrectUsernamePassword">Incorrect username or password!</string>
-    <string name="toastErrorService">Service is disabled!</string>
+    <string name="toastErrorField">There are some error on some field</string>
+    <string name="toastServerOffline">Server offline, try again later!</string>
+    <string name="toastUserNotValidated">This user is not validated</string>
+    <string name="toastIncorrectUsernamePassword">Incorrect username or password</string>
+    <string name="toastErrorService">Service is disabled</string>
 
     <array name="Questions1">
         <item name="a">@string/question1</item>
@@ -104,5 +102,5 @@
     <string name="textViewDateSelected">Date selected</string>
     <string name="dateSeparator">/</string>
     <string name="roomNoName"><![CDATA[\" | <NO NAME>\"]]></string>
-    <string name="time">Time:\u0020</string>
+    <string name="time">Time</string>
 </resources>

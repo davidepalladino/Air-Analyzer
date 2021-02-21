@@ -5,6 +5,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager.widget.ViewPager;
 
 import android.app.Activity;
@@ -25,7 +26,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
-import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
@@ -35,6 +35,7 @@ import java.util.Calendar;
 
 import it.davidepalladino.airanalyzer.R;
 import it.davidepalladino.airanalyzer.control.DatabaseService;
+import it.davidepalladino.airanalyzer.view.widget.Toast;
 import it.davidepalladino.airanalyzer.view.widget.ViewPagerRoom;
 import it.davidepalladino.airanalyzer.control.Setting;
 import it.davidepalladino.airanalyzer.model.Room;
@@ -47,14 +48,15 @@ import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_COD
 import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_ROOM;
 import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
 
-public class MainActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener, ViewPager.OnPageChangeListener {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, DatePickerDialog.OnDateSetListener, ViewPager.OnPageChangeListener {
     private static final String BROADCAST_REQUEST_CODE_MASTER = "MainActivity";
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM = "GetRoom";
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_LOGIN = "Login";
     private static final String TAB_ADD_ID = "Add";
     private static final String TAB_ADD_NAME = "+";
-    private static final int MAX_ATTEMPTS = 3;
+    private static final int MAX_ATTEMPTS_LOGIN = 3;
 
+    private SwipeRefreshLayout swipeRefreshLayout;
     private Toolbar toolbarMain;
     private TabLayout tabLayoutRooms;
     private ViewPagerRoom viewPagerRooms;
@@ -62,16 +64,20 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
     private Calendar calendarSelected;
 
+    private Toast toast;
     private Setting setting;
     private Room roomSelected;
 
-    private int attempts = 1;
+    private int attemptsLogin = 1;
     private int currentPage = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(this);
 
         toolbarMain = (Toolbar) findViewById(R.id.toolbarMain);
         setSupportActionBar(toolbarMain);
@@ -104,10 +110,9 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     @Override
     protected void onStart() {
         super.onStart();
+        toast = new Toast(MainActivity.this, getLayoutInflater());
         setting = new Setting(MainActivity.this);
-
         roomSelected = new Room();
-
         calendarSelected = Calendar.getInstance();
     }
 
@@ -127,6 +132,14 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         unbindService(serviceConnection);
         unregisterReceiver(broadcastReceiver);
+    }
+
+    @Override
+    public void onRefresh() {
+        currentPage = viewPagerRooms.getCurrentItem();
+        viewPagerRooms.getAdapter().notifyDataSetChanged();
+
+        swipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
@@ -190,10 +203,14 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     public void onPageSelected(int position) {
         Menu menuToolbarMain = toolbarMain.getMenu();
 
+        /* Disabling the management of room and the Swipe if the page is 'AddRoomFragment'. */
         if (position != roomPagerAdapter.getPositionAddTab()) {
+            swipeRefreshLayout.setEnabled(true);
             roomSelected = roomPagerAdapter.getRoomAtPosition(position);
             onCreateOptionsMenu(menuToolbarMain);
         } else {
+            swipeRefreshLayout.setEnabled(false);
+
             menuToolbarMain.removeItem(R.id.menuItemRenameThisRoom);
             menuToolbarMain.removeItem(R.id.menuItemRemoveThisRoom);
         }
@@ -215,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             DatabaseService.LocalBinder localBinder = (DatabaseService.LocalBinder) service;
             databaseService = localBinder.getService();
 
-            databaseService.getRoom(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM);
+            databaseService.getRooms(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM);
         }
 
         @Override
@@ -224,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     };
 
     private RoomPagerAdapter roomPagerAdapter;
+
     public class RoomPagerAdapter extends FragmentStatePagerAdapter {
         private Activity activity;
 
@@ -235,18 +253,24 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         public RoomPagerAdapter(FragmentManager fragmentManager, Activity activity, ArrayList<Room> listRooms) {
             super(fragmentManager);
-            this.activity = activity;
 
-            nPage = listRooms.size() + 1;
-            positionAddTab = nPage - 1;
+            this.activity = activity;
 
             tabsID = new ArrayList<String>();
             tabsName = new ArrayList<String>();
 
-            for (int t = 0; t < listRooms.size(); t++) {
-                tabsID.add(listRooms.get(t).getId());
-                tabsName.add(listRooms.get(t).getName());
+            if (listRooms != null) {
+                nPage = listRooms.size() + 1;
+
+                for (int t = 0; t < listRooms.size(); t++) {
+                    tabsID.add(listRooms.get(t).getId());
+                    tabsName.add(listRooms.get(t).getName());
+                }
+            } else {
+                nPage = 1;
             }
+
+            positionAddTab = nPage - 1;
 
             tabsID.add(TAB_ADD_ID);
             tabsName.add(TAB_ADD_NAME);
@@ -268,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         @Override
         public int getItemPosition(Object object) {
-            if (object instanceof RoomPagerAdapter) {
+            if (object instanceof AddRoomFragment) {
                 return POSITION_UNCHANGED;
             } else {
                 return POSITION_NONE;
@@ -312,22 +336,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                             if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM) == 0) {
                                 ArrayList<Room> listRooms = intentFrom.getParcelableArrayListExtra(INTENT_ROOM);
 
-                                if (listRooms.isEmpty() && attempts <= MAX_ATTEMPTS) {
-                                    new Handler().postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            databaseService.getRoom(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM);
-                                            attempts++;
-                                        }
-                                    }, 1000);
-
-                                    return;
-                                }
-
                                 createViewPagerRoom(listRooms);
                                 viewPagerRooms.setCurrentItem(currentPage);
-
-                                attempts = 1;
 
                             // SET ROOM BROADCAST
                             // REMOVE ROOM BROADCAST
@@ -335,23 +345,29 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                                     (intentFrom.getStringExtra(REQUEST_CODE).compareTo(RenameRoomDialog.BROADCAST_REQUEST_CODE_MASTER + RenameRoomDialog.BROADCAST_REQUEST_CODE_EXTENSION_SET_ROOM) == 0) ||
                                      (intentFrom.getStringExtra(REQUEST_CODE).compareTo(RemoveRoomDialog.BROADCAST_REQUEST_CODE_MASTER + RemoveRoomDialog.BROADCAST_REQUEST_CODE_EXTENSION_REMOVE_ROOM) == 0)
                             ) {
-                                databaseService.getRoom(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM);
+                                databaseService.getRooms(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM);
 
                             // LOGIN BROADCAST
                             } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_LOGIN) == 0) {
                                 setting.saveToken(intentFrom.getStringExtra(TOKEN));
-                                attempts = 1;
+                                attemptsLogin = 1;
                             }
 
                             break;
                         case 204:
+                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM) == 0) {
+                                createViewPagerRoom(null);
+                                viewPagerRooms.setCurrentItem(currentPage);
+                            }
+
+                            break;
                         case 401:
-                            if (attempts <= MAX_ATTEMPTS) {
+                            if (attemptsLogin <= MAX_ATTEMPTS_LOGIN) {
                                 new Handler().postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
                                         databaseService.login(setting.readLogin(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_LOGIN);
-                                        attempts++;
+                                        attemptsLogin++;
                                     }
                                 }, 1000);
                             } else {
@@ -363,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                             break;
                         case 404:
                         case 500:
-                            Toast.makeText(MainActivity.this, getString(R.string.toastServerOffline), Toast.LENGTH_LONG).show();
+                            toast.makeToastBlue(R.drawable.ic_baseline_error_24, getString(R.string.toastServerOffline));
                             break;
                         default:
                             break;

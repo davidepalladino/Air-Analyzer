@@ -14,13 +14,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import it.davidepalladino.airanalyzer.R;
 import it.davidepalladino.airanalyzer.control.DatabaseService;
 import it.davidepalladino.airanalyzer.control.Setting;
 import it.davidepalladino.airanalyzer.view.widget.TextWatcherField;
 import it.davidepalladino.airanalyzer.model.Login;
+import it.davidepalladino.airanalyzer.view.widget.Toast;
 
 import static it.davidepalladino.airanalyzer.control.CheckField.*;
 import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE;
@@ -36,6 +36,7 @@ public class LoginActivity extends AppCompatActivity implements TextWatcherField
     private TextView textViewUsername;
     private TextView textViewPassword;
 
+    private Toast toast;
     private Setting setting;
     private Login login;
 
@@ -63,6 +64,8 @@ public class LoginActivity extends AppCompatActivity implements TextWatcherField
     @Override
     protected void onStart() {
         super.onStart();
+        toast = new Toast(LoginActivity.this, getLayoutInflater());
+
         setting = new Setting(LoginActivity.this);
 
         login = setting.readLogin();
@@ -72,7 +75,7 @@ public class LoginActivity extends AppCompatActivity implements TextWatcherField
 
         Intent intentFrom = getIntent();
         if (intentFrom != null && intentFrom.hasExtra(MESSAGE_TOAST)) {
-            Toast.makeText(this, intentFrom.getStringExtra(MESSAGE_TOAST), Toast.LENGTH_SHORT).show();
+            toast.makeToastBlack(R.drawable.ic_baseline_error_24, intentFrom.getStringExtra(MESSAGE_TOAST));
         }
     }
 
@@ -119,7 +122,7 @@ public class LoginActivity extends AppCompatActivity implements TextWatcherField
                     setting.saveLogin(login);
                     databaseService.login(login, BROADCAST_REQUEST_CODE_MASTER);
                 } else {
-                    Toast.makeText(LoginActivity.this, getString(R.string.toastErrorLogin), Toast.LENGTH_LONG).show();
+                    toast.makeToastBlack(R.drawable.ic_baseline_error_24, getString(R.string.toastIncorrectUsernamePassword));
                 }
 
                 break;
@@ -205,17 +208,17 @@ public class LoginActivity extends AppCompatActivity implements TextWatcherField
 
                             break;
                         case 204:
-                            Toast.makeText(LoginActivity.this, getString(R.string.toastUserNotValidated), Toast.LENGTH_LONG).show();
+                            toast.makeToastBlack(R.drawable.ic_baseline_error_24, getString(R.string.toastUserNotValidated));
                             break;
                         case 401:
-                            Toast.makeText(LoginActivity.this, getString(R.string.toastIncorrectUsernamePassword), Toast.LENGTH_LONG).show();
+                            toast.makeToastBlack(R.drawable.ic_baseline_error_24, getString(R.string.toastIncorrectUsernamePassword));
                             break;
                         case 422:
-                            Toast.makeText(LoginActivity.this, getString(R.string.toastErrorLogin), Toast.LENGTH_LONG).show();
+                            toast.makeToastBlack(R.drawable.ic_baseline_error_24, getString(R.string.toastErrorField));
                             break;
                         case 404:
                         case 500:
-                            Toast.makeText(LoginActivity.this, getString(R.string.toastServerOffline), Toast.LENGTH_LONG).show();
+                            toast.makeToastBlack(R.drawable.ic_baseline_error_24, getString(R.string.toastServerOffline));
                             break;
                     }
                 }

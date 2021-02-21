@@ -3,23 +3,14 @@ package it.davidepalladino.airanalyzer.view.dialog;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.ComponentName;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 
 import androidx.fragment.app.DialogFragment;
 
 import it.davidepalladino.airanalyzer.R;
-import it.davidepalladino.airanalyzer.control.DatabaseService;
-import it.davidepalladino.airanalyzer.control.Setting;
-import it.davidepalladino.airanalyzer.model.Room;
-
-import static android.content.Context.BIND_AUTO_CREATE;
 
 public class SignupDialog extends DialogFragment {
     private Activity activity;

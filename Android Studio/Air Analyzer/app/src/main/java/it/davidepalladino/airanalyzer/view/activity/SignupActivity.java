@@ -18,7 +18,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import it.davidepalladino.airanalyzer.R;
 import it.davidepalladino.airanalyzer.control.DatabaseService;
@@ -26,6 +25,7 @@ import it.davidepalladino.airanalyzer.control.Setting;
 import it.davidepalladino.airanalyzer.view.widget.TextWatcherField;
 import it.davidepalladino.airanalyzer.model.Signup;
 import it.davidepalladino.airanalyzer.view.dialog.SignupDialog;
+import it.davidepalladino.airanalyzer.view.widget.Toast;
 
 import static it.davidepalladino.airanalyzer.control.CheckField.*;
 import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE;
@@ -64,6 +64,7 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
     private String questionSelected2;
     private String questionSelected3;
 
+    private Toast toast;
     private Setting setting;
     private Signup signup;
 
@@ -180,7 +181,7 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
                     databaseService.signup(signup, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SIGNUP);
 
                 } else {
-                    Toast.makeText(SignupActivity.this, getString(R.string.toastErrorSignup), Toast.LENGTH_LONG).show();
+                    toast.makeToastBlack(R.drawable.ic_baseline_error_24, getString(R.string.toastErrorField));
                 }
             }
         });
@@ -189,6 +190,7 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
     @Override
     protected void onStart() {
         super.onStart();
+        toast = new Toast(SignupActivity.this, getLayoutInflater());
         setting = new Setting(SignupActivity.this);
     }
 
@@ -355,14 +357,14 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
 
                         break;
                     case 403:
-                        Toast.makeText(SignupActivity.this, getString(R.string.toastErrorService), Toast.LENGTH_LONG).show();
+                        toast.makeToastBlack(R.drawable.ic_baseline_error_24, getString(R.string.toastErrorService));
                         break;
                     case 404:
                     case 500:
-                        Toast.makeText(SignupActivity.this, getString(R.string.toastServerOffline), Toast.LENGTH_LONG).show();
+                        toast.makeToastBlack(R.drawable.ic_baseline_error_24, getString(R.string.toastServerOffline));
                         break;
                     case 422:
-                        Toast.makeText(SignupActivity.this, getString(R.string.toastErrorSignup), Toast.LENGTH_LONG).show();
+                        toast.makeToastBlack(R.drawable.ic_baseline_error_24, getString(R.string.toastErrorField));
                         break;
                 }
             }
