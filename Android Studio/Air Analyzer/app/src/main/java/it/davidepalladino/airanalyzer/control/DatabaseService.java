@@ -149,8 +149,8 @@ public class DatabaseService extends Service {
         }
     }
 
-    public void getRooms(String token, String requestCode) {
-        Call<ArrayList<Room>> call = api.getRooms("Bearer " + token);
+    public void getActiveRooms(String token, String requestCode) {
+        Call<ArrayList<Room>> call = api.getActiveRooms("Bearer " + token);
         call.enqueue(new Callback<ArrayList<Room>>() {
             @Override
             public void onResponse(Call<ArrayList<Room>> call, Response<ArrayList<Room>> response) {
@@ -170,8 +170,47 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void setRoom(String token, Room room, String requestCode) {
-        Call<Room.NoResponse> call = api.setRoom("Bearer " + token, room);
+    public void getInactiveRooms(String token, String requestCode) {
+        Call<ArrayList<Room>> call = api.getInactiveRooms("Bearer " + token);
+        call.enqueue(new Callback<ArrayList<Room>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Room>> call, Response<ArrayList<Room>> response) {
+                ArrayList<Room> listRooms = response.body();
+
+                Intent intentBroadcast = new Intent(BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE, requestCode);
+                intentBroadcast.putExtra(STATUS_CODE, response.code());
+                intentBroadcast.putParcelableArrayListExtra(INTENT_ROOM, listRooms);
+                sendBroadcast(intentBroadcast);
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Room>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void renameRoom(String token, Room room, String requestCode) {
+        Call<Room.NoResponse> call = api.renameRoom("Bearer " + token, room);
+        call.enqueue(new Callback<Room.NoResponse>() {
+            @Override
+            public void onResponse(Call<Room.NoResponse> call, Response<Room.NoResponse> response) {
+                Intent intentBroadcast = new Intent(BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE, requestCode);
+                intentBroadcast.putExtra(STATUS_CODE, response.code());
+                sendBroadcast(intentBroadcast);
+            }
+
+            @Override
+            public void onFailure(Call<Room.NoResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void addRoom(String token, Room room, String requestCode) {
+        Call<Room.NoResponse> call = api.addRoom("Bearer " + token, room);
         call.enqueue(new Callback<Room.NoResponse>() {
             @Override
             public void onResponse(Call<Room.NoResponse> call, Response<Room.NoResponse> response) {

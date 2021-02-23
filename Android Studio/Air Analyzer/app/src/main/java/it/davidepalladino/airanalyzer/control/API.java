@@ -29,11 +29,17 @@ public interface API {
     @GET("api/checkEmail")
     Call<Signup.NoResponse> checkEmail(@Query("email") String email);
 
-    @GET("api/airanalyzer/getRooms")
-    Call<ArrayList<Room>> getRooms(@Header("Authorization") String token);
+    @GET("api/airanalyzer/getActiveRooms")
+    Call<ArrayList<Room>> getActiveRooms(@Header("Authorization") String token);
 
-    @POST("api/airanalyzer/setRoom")
-    Call<Room.NoResponse> setRoom(@Header("Authorization") String token, @Body Room room);
+    @GET("api/airanalyzer/getInactiveRooms")
+    Call<ArrayList<Room>> getInactiveRooms(@Header("Authorization") String token);
+
+    @POST("api/airanalyzer/renameRoom")
+    Call<Room.NoResponse> renameRoom(@Header("Authorization") String token, @Body Room room);
+
+    @POST("api/airanalyzer/addRoom")
+    Call<Room.NoResponse> addRoom(@Header("Authorization") String token, @Body Room room);
 
     @POST("api/airanalyzer/removeRoom")
     Call<Room.NoResponse> removeRoom(@Header("Authorization") String token, @Body Room room);

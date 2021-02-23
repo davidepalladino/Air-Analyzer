@@ -41,24 +41,12 @@ public class MeasureAverage implements Parcelable {
         return hour;
     }
 
-    public void setHour(String hour) {
-        this.hour = hour;
-    }
-
     public float getTemperature() {
         return temperature;
     }
 
-    public void setTemperature(float temperature) {
-        this.temperature = temperature;
-    }
-
     public float getHumidity() {
         return humidity;
-    }
-
-    public void setHumidity(float humidity) {
-        this.humidity = humidity;
     }
 
     /**

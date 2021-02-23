@@ -164,14 +164,13 @@ public class RoomFragment extends Fragment {
         seriesTemperature.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
-                toast.makeToastBlue(R.drawable.ic_outline_info_24_toast,
-                        getString(R.string.time) +
-                                String.format("%.0f:00", dataPoint.getX()) +
-                                "\n" +
-                                getString(R.string.temperature) +
-                                ": " +
-                                String.format("%.2f", dataPoint.getY()) +
-                                " °C");
+                toast.makeToastBlueMeasure(
+                        R.drawable.ic_outline_info_24_toast,
+                        getString(R.string.time),
+                        String.format("%.0f:00", dataPoint.getX()),
+                        getString(R.string.temperature),
+                        String.format("%.2f", dataPoint.getY()) + " °C"
+                );
             }
         });
 
@@ -199,7 +198,7 @@ public class RoomFragment extends Fragment {
                         getString(R.string.time),
                         String.format("%.0f:00", dataPoint.getX()),
                         getString(R.string.humidity),
-                        String.format("%.2f", dataPoint.getY()) + "%"
+                        String.format("%.2f", dataPoint.getY()) + " %"
                 );
             }
         });
@@ -303,7 +302,14 @@ public class RoomFragment extends Fragment {
                                 textViewLatestTemperature.setText(getString(R.string.textViewNone));
                                 textViewLatestHumidity.setText(getString(R.string.textViewNone));
                             } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId()) == 0) {
-                                toast.makeToastBlue(R.drawable.ic_outline_info_24_toast, getString(R.string.toastNoMeasuresOnDate) + "'" + room.getName() + "'");
+                                String messageToast = getString(R.string.toastNoMeasuresOnDate) + "'";
+                                if (room.getName() != null) {
+                                    messageToast += room.getName() + "'";
+                                } else {
+                                    messageToast += room.getId() + "'";
+                                }
+
+                                toast.makeToastBlue(R.drawable.ic_outline_info_24_toast, messageToast);
                             }
 
                             break;

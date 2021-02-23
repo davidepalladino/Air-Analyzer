@@ -45,32 +45,12 @@ public class MeasureFull implements Parcelable {
         return dateAndTime;
     }
 
-    public void setDateAndTime(String dateAndTime) {
-        this.dateAndTime = dateAndTime;
-    }
-
-    public String getDayWeek() {
-        return dayWeek;
-    }
-
-    public void setDayWeek(String dayWeek) {
-        this.dayWeek = dayWeek;
-    }
-
     public float getTemperature() {
         return temperature;
     }
 
-    public void setTemperature(float temperature) {
-        this.temperature = temperature;
-    }
-
     public float getHumidity() {
         return humidity;
-    }
-
-    public void setHumidity(float humidity) {
-        this.humidity = humidity;
     }
 
     /**

@@ -19,7 +19,7 @@ public class Toast {
     }
 
     public void makeToastBlack(int image, String message) {
-        View layout = layoutInflater.inflate(R.layout.toast_black, (ViewGroup) activity.findViewById(R.id.lineaLayoutToast));
+        View layout = layoutInflater.inflate(R.layout.toast_black, (ViewGroup) activity.findViewById(R.id.linearLayoutToast));
 
         ImageView imageViewTypeMessageToast = (ImageView) layout.findViewById(R.id.imageViewTypeMessageToast);
         TextView textViewMessageToast = (TextView) layout.findViewById(R.id.textViewMessageToast);
@@ -34,7 +34,7 @@ public class Toast {
     }
 
     public void makeToastBlue(int image, String message) {
-        View layout = layoutInflater.inflate(R.layout.toast_blue, (ViewGroup) activity.findViewById(R.id.lineaLayoutToast));
+        View layout = layoutInflater.inflate(R.layout.toast_blue, (ViewGroup) activity.findViewById(R.id.linearLayoutToast));
 
         ImageView imageViewTypeMessageToast = (ImageView) layout.findViewById(R.id.imageViewTypeMessageToast);
         TextView textViewMessageToast = (TextView) layout.findViewById(R.id.textViewMessageToast);
@@ -49,7 +49,7 @@ public class Toast {
     }
 
     public void makeToastBlueMeasure(int image, String dateString, String dateValue, String measureType, String MeasureValue) {
-        View layout = layoutInflater.inflate(R.layout.toast_blue_measure, (ViewGroup) activity.findViewById(R.id.lineaLayoutToast));
+        View layout = layoutInflater.inflate(R.layout.toast_blue_measure, (ViewGroup) activity.findViewById(R.id.linearLayoutToast));
 
         ImageView imageViewTypeMessageToast = (ImageView) layout.findViewById(R.id.imageViewTypeMessageToast);
 

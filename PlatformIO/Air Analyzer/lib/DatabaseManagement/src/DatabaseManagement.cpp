@@ -30,7 +30,7 @@ uint8_t DatabaseManagement::getRoomID() { return roomID; }
 bool DatabaseManagement::getIsErrorUpdate() { return isErrorUpdate; }
 
 char* DatabaseManagement::createQueryInsertRoom() {
-    String queryString = "INSERT INTO airanalyzer.Room (ID) VALUES (" + 
+    String queryString = "INSERT INTO airanalyzer_1.Room (ID) VALUES (" + 
                     String(roomID) + ")";
 
     uint8_t sizeQuery = queryString.length() + 1;
@@ -43,7 +43,7 @@ char* DatabaseManagement::createQueryInsertRoom() {
 char* DatabaseManagement::createQueryInsertValues() {
     delay(1000);
 
-    String queryString = "INSERT INTO airanalyzer.Measure (DateAndTime, DayWeek, Room, Temperature, Humidity) VALUES ('" + 
+    String queryString = "INSERT INTO airanalyzer_1.Measure (DateAndTime, DayWeek, Room, Temperature, Humidity) VALUES ('" + 
                     String(datetime->getActualYear()) + "-" +
                     String(datetime->getActualMonth()) + "-" +
                     String(datetime->getActualDay()) + " " +

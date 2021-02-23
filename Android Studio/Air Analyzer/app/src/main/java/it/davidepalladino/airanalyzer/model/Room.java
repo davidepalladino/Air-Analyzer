@@ -54,10 +54,13 @@ public class Room implements Parcelable {
 
     @Override
     public String toString() {
-        return "Room{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                '}';
+        String returnString = id;
+
+        if (name != null) {
+            returnString += " - " + name;
+        }
+
+        return returnString;
     }
 
     /**

@@ -99,9 +99,7 @@ public class LoginActivity extends AppCompatActivity implements TextWatcherField
 
     @Override
     public void onClick(View v) {
-        int buttonID = v.getId();
-
-        switch (buttonID) {
+        switch (v.getId()) {
             case R.id.buttonLogin:
                 boolean errorField = false;
 
@@ -132,7 +130,6 @@ public class LoginActivity extends AppCompatActivity implements TextWatcherField
 
                 break;
         }
-
     }
 
     @Override

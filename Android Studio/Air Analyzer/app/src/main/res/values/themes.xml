@@ -14,18 +14,23 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
 
-        <!-- Customize your theme here. -->
         <item name="actionOverflowButtonStyle">@style/overflowButtonStyle</item>
 
         <item name="android:forceDarkAllowed">false</item>
     </style>
 
+    <!-- Floating Action Button. -->
     <style name="overflowButtonStyle" parent="Widget.AppCompat.ActionButton.Overflow">
         <item name="android:tint">@color/primaryTextDarkColor1</item>
     </style>
 
-    <style name="TabLayoutGraph" parent="TextAppearance.Design.Tab">
-        <item name="android:textSize">12sp</item>
-        <item name="textAllCaps">false</item>
+
+    <!-- TabLayout. -->
+    <style name="TabLayoutMain" parent="Widget.Design.TabLayout">
+        <item name="android:background">@color/primaryColor</item>
+        <item name="tabTextColor">@color/secondaryTextDarkColor2</item>
+        <item name="tabSelectedTextColor">@color/secondaryTextDarkColor1</item>
+        <item name="tabIndicatorColor">@color/secondaryTextDarkColor1</item>
+        <item name="tabIndicatorHeight">3dp</item>
     </style>
 </resources>

@@ -101,6 +101,6 @@
     <string name="textViewLatestMeasurementAt">at the\u0020</string>
     <string name="textViewDateSelected">Date selected</string>
     <string name="dateSeparator">/</string>
-    <string name="roomNoName"><![CDATA[\" | <NO NAME>\"]]></string>
+    <string name="roomNoName"><![CDATA[\ | <NO NAME>\]]></string>
     <string name="time">Time</string>
 </resources>

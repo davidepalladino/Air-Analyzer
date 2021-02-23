@@ -32,6 +32,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 
 import it.davidepalladino.airanalyzer.R;
 import it.davidepalladino.airanalyzer.control.DatabaseService;
@@ -41,16 +42,16 @@ import it.davidepalladino.airanalyzer.control.Setting;
 import it.davidepalladino.airanalyzer.model.Room;
 import it.davidepalladino.airanalyzer.view.dialog.RemoveRoomDialog;
 import it.davidepalladino.airanalyzer.view.dialog.RenameRoomDialog;
-import it.davidepalladino.airanalyzer.view.fragment.AddRoomFragment;
+import it.davidepalladino.airanalyzer.view.fragment.AddFragment;
 import it.davidepalladino.airanalyzer.view.fragment.RoomFragment;
 
 import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE;
 import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_ROOM;
 import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
 
-public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, DatePickerDialog.OnDateSetListener, ViewPager.OnPageChangeListener {
-    private static final String BROADCAST_REQUEST_CODE_MASTER = "MainActivity";
-    private static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM = "GetRoom";
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, DatePickerDialog.OnDateSetListener, ViewPager.OnPageChangeListener, AddFragment.AddFragmentCallback {
+    public static final String BROADCAST_REQUEST_CODE_MASTER = "MainActivity";
+    public static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM = "GetActiveRoom";
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_LOGIN = "Login";
     private static final String TAB_ADD_ID = "Add";
     private static final String TAB_ADD_NAME = "+";
@@ -139,6 +140,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         currentPage = viewPagerRooms.getCurrentItem();
         viewPagerRooms.getAdapter().notifyDataSetChanged();
 
+        databaseService.getActiveRooms(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM);
+
         swipeRefreshLayout.setRefreshing(false);
     }
 
@@ -203,13 +206,17 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     public void onPageSelected(int position) {
         Menu menuToolbarMain = toolbarMain.getMenu();
 
-        /* Disabling the management of room and the Swipe if the page is 'AddRoomFragment'. */
+        /* Disabling the management of room and the Swipe if the page is 'AddFragment'. */
         if (position != roomPagerAdapter.getPositionAddTab()) {
             swipeRefreshLayout.setEnabled(true);
-            roomSelected = roomPagerAdapter.getRoomAtPosition(position);
+            floatingActionButtonCalendar.setVisibility(View.VISIBLE);
+
             onCreateOptionsMenu(menuToolbarMain);
+
+            roomSelected = roomPagerAdapter.getRoomAtPosition(position);
         } else {
             swipeRefreshLayout.setEnabled(false);
+            floatingActionButtonCalendar.setVisibility(View.GONE);
 
             menuToolbarMain.removeItem(R.id.menuItemRenameThisRoom);
             menuToolbarMain.removeItem(R.id.menuItemRemoveThisRoom);
@@ -220,28 +227,17 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     public void onPageScrollStateChanged(int state) {
     }
 
+    @Override
+    public void updateCurrentPage(Room roomSelected) {
+        this.roomSelected = roomSelected;
+    }
+
     public void createViewPagerRoom(ArrayList<Room> listRooms) {
         roomPagerAdapter = new RoomPagerAdapter(getSupportFragmentManager(), MainActivity.this, listRooms);
         viewPagerRooms.setAdapter(roomPagerAdapter);
     }
 
-    public DatabaseService databaseService;
-    public ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            DatabaseService.LocalBinder localBinder = (DatabaseService.LocalBinder) service;
-            databaseService = localBinder.getService();
-
-            databaseService.getRooms(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-        }
-    };
-
     private RoomPagerAdapter roomPagerAdapter;
-
     public class RoomPagerAdapter extends FragmentStatePagerAdapter {
         private Activity activity;
 
@@ -286,13 +282,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             if (position != positionAddTab) {
                 return RoomFragment.newInstance(new Room(tabsID.get(position), tabsName.get(position)), calendarSelected.getTimeInMillis());
             } else {
-                return AddRoomFragment.newInstance("", "");
+                return AddFragment.newInstance();
             }
         }
 
         @Override
         public int getItemPosition(Object object) {
-            if (object instanceof AddRoomFragment) {
+            if (object instanceof AddFragment) {
                 return POSITION_UNCHANGED;
             } else {
                 return POSITION_NONE;
@@ -322,7 +318,36 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         public int getPositionAddTab() {
             return positionAddTab;
         }
+
+        public int getPositionRoom(Room room) {
+            Iterator<String> iteratorRoomID = tabsID.iterator();
+            currentPage = 0;
+            while (iteratorRoomID.hasNext()) {
+                if (iteratorRoomID.next().compareTo(roomSelected.getId()) == 0) {
+                    return currentPage;
+                }
+
+                currentPage++;
+            }
+
+            return currentPage;
+        }
     }
+
+    public DatabaseService databaseService;
+    public ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            DatabaseService.LocalBinder localBinder = (DatabaseService.LocalBinder) service;
+            databaseService = localBinder.getService();
+
+            databaseService.getActiveRooms(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+    };
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -332,12 +357,20 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     int statusCode = intentFrom.getIntExtra(DatabaseService.STATUS_CODE, 0);
                     switch (statusCode) {
                         case 200:
-                            // GET ROOM BROADCAST
-                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM) == 0) {
+                            // GET ACTIVE ROOMS BROADCAST from this Activity
+                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM) == 0) {
                                 ArrayList<Room> listRooms = intentFrom.getParcelableArrayListExtra(INTENT_ROOM);
 
                                 createViewPagerRoom(listRooms);
                                 viewPagerRooms.setCurrentItem(currentPage);
+                                roomSelected = roomPagerAdapter.getRoomAtPosition(currentPage);
+
+                            // GET ACTIVE ROOMS BROADCAST from this AddFragment
+                            } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(AddFragment.BROADCAST_REQUEST_CODE_MASTER + AddFragment.BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM) == 0) {
+                                ArrayList<Room> listRooms = intentFrom.getParcelableArrayListExtra(INTENT_ROOM);
+
+                                createViewPagerRoom(listRooms);
+                                viewPagerRooms.setCurrentItem(roomPagerAdapter.getPositionRoom(roomSelected));
 
                             // SET ROOM BROADCAST
                             // REMOVE ROOM BROADCAST
@@ -345,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                                     (intentFrom.getStringExtra(REQUEST_CODE).compareTo(RenameRoomDialog.BROADCAST_REQUEST_CODE_MASTER + RenameRoomDialog.BROADCAST_REQUEST_CODE_EXTENSION_SET_ROOM) == 0) ||
                                      (intentFrom.getStringExtra(REQUEST_CODE).compareTo(RemoveRoomDialog.BROADCAST_REQUEST_CODE_MASTER + RemoveRoomDialog.BROADCAST_REQUEST_CODE_EXTENSION_REMOVE_ROOM) == 0)
                             ) {
-                                databaseService.getRooms(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM);
+                                databaseService.getActiveRooms(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM);
 
                             // LOGIN BROADCAST
                             } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_LOGIN) == 0) {
@@ -355,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                             break;
                         case 204:
-                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ROOM) == 0) {
+                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM) == 0) {
                                 createViewPagerRoom(null);
                                 viewPagerRooms.setCurrentItem(currentPage);
                             }

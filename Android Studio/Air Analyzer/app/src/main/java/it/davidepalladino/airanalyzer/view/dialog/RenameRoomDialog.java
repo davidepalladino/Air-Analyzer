@@ -42,7 +42,7 @@ public class RenameRoomDialog extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         room.setName(editTextName.getText().toString());
-                        databaseService.setRoom(token, room, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SET_ROOM);
+                        databaseService.renameRoom(token, room, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SET_ROOM);
                     }
                 })
 
