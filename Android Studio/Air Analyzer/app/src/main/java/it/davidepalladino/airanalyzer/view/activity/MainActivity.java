@@ -49,11 +49,11 @@ import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_COD
 import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_ROOM;
 import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
 
-public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, DatePickerDialog.OnDateSetListener, ViewPager.OnPageChangeListener, AddFragment.AddFragmentCallback {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, DatePickerDialog.OnDateSetListener, ViewPager.OnPageChangeListener {
     public static final String BROADCAST_REQUEST_CODE_MASTER = "MainActivity";
     public static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM = "GetActiveRoom";
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_LOGIN = "Login";
-    private static final String TAB_ADD_ID = "Add";
+    private static final String TAB_ADD_ID = "10";
     private static final String TAB_ADD_NAME = "+";
     private static final int MAX_ATTEMPTS_LOGIN = 3;
 
@@ -67,7 +67,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     private Toast toast;
     private Setting setting;
-    private Room roomSelected;
+
+    private AddFragment addFragment;
 
     private int attemptsLogin = 1;
     private int currentPage = 0;
@@ -113,7 +114,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         super.onStart();
         toast = new Toast(MainActivity.this, getLayoutInflater());
         setting = new Setting(MainActivity.this);
-        roomSelected = new Room();
         calendarSelected = Calendar.getInstance();
     }
 
@@ -160,20 +160,26 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         switch (item.getItemId()) {
             case R.id.menuItemRenameThisRoom:
                 currentPage = viewPagerRooms.getCurrentItem();
-                
+
                 RenameRoomDialog renameRoomDialog = new RenameRoomDialog();
-                renameRoomDialog.setRoom(roomSelected);
+                renameRoomDialog.setRoom(pagerAdapterRoom.getRoomAtPosition(currentPage));
                 renameRoomDialog.setToken(setting.readToken());
                 renameRoomDialog.show(getSupportFragmentManager(), "");
 
                 break;
             case R.id.menuItemRemoveThisRoom:
-                currentPage = 0;
+                currentPage = viewPagerRooms.getCurrentItem();
 
                 RemoveRoomDialog removeRoomDialog = new RemoveRoomDialog();
-                removeRoomDialog.setRoom(roomSelected);
+                removeRoomDialog.setRoom(pagerAdapterRoom.getRoomAtPosition(currentPage));
                 removeRoomDialog.setToken(setting.readToken());
                 removeRoomDialog.show(getSupportFragmentManager(), "");
+
+                if (currentPage != 0) {
+                    currentPage--;
+                } else {
+                    currentPage = 0;
+                }
 
                 break;
             case R.id.menuItemLogout:
@@ -207,13 +213,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         Menu menuToolbarMain = toolbarMain.getMenu();
 
         /* Disabling the management of room and the Swipe if the page is 'AddFragment'. */
-        if (position != roomPagerAdapter.getPositionAddTab()) {
+        if (pagerAdapterRoom.getRoomAtPosition(position).getId().compareTo(TAB_ADD_ID) != 0) {
             swipeRefreshLayout.setEnabled(true);
             floatingActionButtonCalendar.setVisibility(View.VISIBLE);
 
             onCreateOptionsMenu(menuToolbarMain);
 
-            roomSelected = roomPagerAdapter.getRoomAtPosition(position);
+            currentPage = position;
         } else {
             swipeRefreshLayout.setEnabled(false);
             floatingActionButtonCalendar.setVisibility(View.GONE);
@@ -227,49 +233,32 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     public void onPageScrollStateChanged(int state) {
     }
 
-    @Override
-    public void updateCurrentPage(Room roomSelected) {
-        this.roomSelected = roomSelected;
-    }
-
     public void createViewPagerRoom(ArrayList<Room> listRooms) {
-        roomPagerAdapter = new RoomPagerAdapter(getSupportFragmentManager(), MainActivity.this, listRooms);
-        viewPagerRooms.setAdapter(roomPagerAdapter);
+        pagerAdapterRoom = new PageAdapterRoom(getSupportFragmentManager(), MainActivity.this, listRooms);
+        viewPagerRooms.setAdapter(pagerAdapterRoom);
     }
 
-    private RoomPagerAdapter roomPagerAdapter;
-    public class RoomPagerAdapter extends FragmentStatePagerAdapter {
+    private PageAdapterRoom pagerAdapterRoom;
+    public class PageAdapterRoom extends FragmentStatePagerAdapter {
         private Activity activity;
 
         private int nPage;
-        private int positionAddTab;
+        private ArrayList<Room> listTabs;
 
-        private ArrayList<String> tabsID;
-        private ArrayList<String> tabsName;
-
-        public RoomPagerAdapter(FragmentManager fragmentManager, Activity activity, ArrayList<Room> listRooms) {
+        public PageAdapterRoom(FragmentManager fragmentManager, Activity activity, ArrayList<Room> listRooms) {
             super(fragmentManager);
 
             this.activity = activity;
 
-            tabsID = new ArrayList<String>();
-            tabsName = new ArrayList<String>();
-
             if (listRooms != null) {
-                nPage = listRooms.size() + 1;
-
-                for (int t = 0; t < listRooms.size(); t++) {
-                    tabsID.add(listRooms.get(t).getId());
-                    tabsName.add(listRooms.get(t).getName());
-                }
+                listTabs = listRooms;
+                nPage = listTabs.size() + 1;
             } else {
+                listTabs = new ArrayList<Room>();
                 nPage = 1;
             }
 
-            positionAddTab = nPage - 1;
-
-            tabsID.add(TAB_ADD_ID);
-            tabsName.add(TAB_ADD_NAME);
+            listTabs.add(new Room(TAB_ADD_ID, TAB_ADD_NAME));
         }
 
         @Override
@@ -279,10 +268,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         @Override
         public Fragment getItem(int position) {
-            if (position != positionAddTab) {
-                return RoomFragment.newInstance(new Room(tabsID.get(position), tabsName.get(position)), calendarSelected.getTimeInMillis());
+            if (position != (nPage - 1)) {
+                return RoomFragment.newInstance(listTabs.get(position), calendarSelected.getTimeInMillis());
             } else {
-                return AddFragment.newInstance();
+                addFragment = AddFragment.newInstance();
+                return addFragment;
             }
         }
 
@@ -297,40 +287,37 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         @Override
         public CharSequence getPageTitle(int position) {
-            if (position != positionAddTab) {
-                if (tabsName.get(position) != null) {
-                    return tabsID.get(position) + " | " + tabsName.get(position);
+            if (position != (nPage - 1)) {
+                if (listTabs.get(position).getName() != null) {
+                    return listTabs.get(position).getId() + " | " + listTabs.get(position).getName();
                 } else {
-                    SpannableString spannableString = new SpannableString(tabsID.get(position) + getString(R.string.roomNoName));
+                    SpannableString spannableString = new SpannableString(listTabs.get(position).getId() + getString(R.string.roomNoName));
                     spannableString.setSpan(new RelativeSizeSpan(0.6f), 4, 13, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                     return spannableString;
                 }
             } else {
-                return tabsName.get(position);
+                return listTabs.get(position).getName();
             }
         }
 
         public Room getRoomAtPosition(int position) {
-            return new Room(tabsID.get(position), tabsName.get(position));
-        }
-
-        public int getPositionAddTab() {
-            return positionAddTab;
+            return listTabs.get(position);
         }
 
         public int getPositionRoom(Room room) {
-            Iterator<String> iteratorRoomID = tabsID.iterator();
-            currentPage = 0;
-            while (iteratorRoomID.hasNext()) {
-                if (iteratorRoomID.next().compareTo(roomSelected.getId()) == 0) {
-                    return currentPage;
+            Iterator<Room> iteratorRoom = listTabs.iterator();
+
+            int position = 0;
+            while (iteratorRoom.hasNext()) {
+                if (iteratorRoom.next().getId().compareTo(room.getId()) == 0) {
+                    return position;
                 }
 
-                currentPage++;
+                position++;
             }
 
-            return currentPage;
+            return position;
         }
     }
 
@@ -363,16 +350,17 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                                 createViewPagerRoom(listRooms);
                                 viewPagerRooms.setCurrentItem(currentPage);
-                                roomSelected = roomPagerAdapter.getRoomAtPosition(currentPage);
 
                             // GET ACTIVE ROOMS BROADCAST from this AddFragment
                             } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(AddFragment.BROADCAST_REQUEST_CODE_MASTER + AddFragment.BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM) == 0) {
                                 ArrayList<Room> listRooms = intentFrom.getParcelableArrayListExtra(INTENT_ROOM);
 
-                                createViewPagerRoom(listRooms);
-                                viewPagerRooms.setCurrentItem(roomPagerAdapter.getPositionRoom(roomSelected));
+                                Room roomSelected = addFragment.roomSelected;
 
-                            // SET ROOM BROADCAST
+                                createViewPagerRoom(listRooms);
+                                viewPagerRooms.setCurrentItem(pagerAdapterRoom.getPositionRoom(roomSelected));
+
+                                // SET ROOM BROADCAST
                             // REMOVE ROOM BROADCAST
                             } else if (
                                     (intentFrom.getStringExtra(REQUEST_CODE).compareTo(RenameRoomDialog.BROADCAST_REQUEST_CODE_MASTER + RenameRoomDialog.BROADCAST_REQUEST_CODE_EXTENSION_SET_ROOM) == 0) ||
@@ -388,6 +376,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                             break;
                         case 204:
+                            // GET ACTIVE ROOMS BROADCAST from this Activity
                             if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM) == 0) {
                                 createViewPagerRoom(null);
                                 viewPagerRooms.setCurrentItem(currentPage);

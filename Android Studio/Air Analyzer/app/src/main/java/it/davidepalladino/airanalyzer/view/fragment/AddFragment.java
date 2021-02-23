@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 
@@ -42,24 +43,17 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
     private LinearLayout linearLayoutAddRoom;
     private Spinner spinnerRooms;
+    private EditText editTextLocalIP;
     private Button buttonAddRoom;
+    private Button buttonAddDevice;
 
     private Toast toast;
     private Setting setting;
-    private Room roomSelected;
+    public Room roomSelected;
 
     public static AddFragment newInstance() {
         AddFragment fragment = new AddFragment();
         return fragment;
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-
-        if (context instanceof MainActivity) {
-            listenerAddFragmentCallback = (MainActivity) context;
-        }
     }
 
     @Override
@@ -96,8 +90,13 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         spinnerRooms = layoutFragment.findViewById(R.id.spinnerRooms);
         spinnerRooms.setOnItemSelectedListener(this);
 
+        editTextLocalIP = layoutFragment.findViewById(R.id.editTextLocalIP);
+
         buttonAddRoom = layoutFragment.findViewById(R.id.buttonAddRoom);
         buttonAddRoom.setOnClickListener(this);
+
+        buttonAddDevice = layoutFragment.findViewById(R.id.buttonAddDevice);
+        buttonAddDevice.setOnClickListener(this);
 
         return layoutFragment;
     }
@@ -109,15 +108,17 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
-
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.buttonAddRoom:
-                listenerAddFragmentCallback.updateCurrentPage(roomSelected);
                 databaseService.addRoom(setting.readToken(), roomSelected, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_ADD_ROOM);
+
+                break;
+            case R.id.buttonAddDevice:
+                //TODO Implement the Socket Connection with a new Service.
 
                 break;
         }
@@ -181,9 +182,4 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
             }
         }
     };
-
-    private AddFragmentCallback listenerAddFragmentCallback;
-    public interface AddFragmentCallback {
-        public void updateCurrentPage(Room roomSelected);
-    }
 }
