@@ -1,5 +1,6 @@
 package it.davidepalladino.airanalyzer.view.fragment;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -8,7 +9,6 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import android.os.IBinder;
@@ -25,31 +25,45 @@ import android.widget.Spinner;
 import java.util.ArrayList;
 
 import it.davidepalladino.airanalyzer.R;
+import it.davidepalladino.airanalyzer.control.ClientSocket;
 import it.davidepalladino.airanalyzer.control.DatabaseService;
 import it.davidepalladino.airanalyzer.control.Setting;
 import it.davidepalladino.airanalyzer.model.Room;
-import it.davidepalladino.airanalyzer.view.activity.MainActivity;
+import it.davidepalladino.airanalyzer.model.User;
 import it.davidepalladino.airanalyzer.view.widget.Toast;
 
 import static android.content.Context.BIND_AUTO_CREATE;
-import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE;
+import static it.davidepalladino.airanalyzer.control.ClientSocket.ERROR_SOCKET;
+import static it.davidepalladino.airanalyzer.control.ClientSocket.MESSAGE_SOCKET;
+import static it.davidepalladino.airanalyzer.control.ClientSocket.REQUEST_CODE_SOCKET;
+import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.control.DatabaseService.STATUS_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_BROADCAST;
 import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_ROOM;
+import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_USER;
 
 public class AddFragment extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener {
     public static final String BROADCAST_REQUEST_CODE_MASTER = "AddFragment";
     public static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM = "GetActiveRooms";
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_INACTIVE_ROOMS = "GetInactiveRooms";
+    private static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_USER = "GetUser";
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_ADD_ROOM = "AddRoom";
+    private static final String BROADCAST_REQUEST_CODE_EXTENSION_SOCKET_WRITE_1 = "SocketWrite1";
+    private static final String BROADCAST_REQUEST_CODE_EXTENSION_SOCKET_READ_2 = "SocketRead2";
 
     private LinearLayout linearLayoutAddRoom;
     private Spinner spinnerRooms;
     private EditText editTextLocalIP;
     private Button buttonAddRoom;
     private Button buttonAddDevice;
+    private AlertDialog dialogAddDevice;
 
     private Toast toast;
     private Setting setting;
-    public Room roomSelected;
+    private ClientSocket clientSocket;
+
+    private Room roomSelected;
+    private User user = null;
 
     public static AddFragment newInstance() {
         AddFragment fragment = new AddFragment();
@@ -67,7 +81,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     public void onResume() {
         super.onResume();
 
-        getActivity().registerReceiver(broadcastReceiver, new IntentFilter(DatabaseService.BROADCAST));
+        getActivity().registerReceiver(broadcastReceiver, new IntentFilter(INTENT_BROADCAST));
 
         Intent intentDatabaseService = new Intent(getActivity(), DatabaseService.class);
         getActivity().bindService(intentDatabaseService, serviceConnection, BIND_AUTO_CREATE);
@@ -118,10 +132,15 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
                 break;
             case R.id.buttonAddDevice:
-                //TODO Implement the Socket Connection with a new Service.
+                clientSocket = new ClientSocket(getContext(), editTextLocalIP.getText().toString(), 8008);
+                clientSocket.write(1, user.getId(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SOCKET_WRITE_1);
 
                 break;
         }
+    }
+
+    public Room getRoomSelected() {
+        return roomSelected;
     }
 
     public DatabaseService databaseService;
@@ -132,6 +151,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
             databaseService = localBinder.getService();
 
             databaseService.getInactiveRooms(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_INACTIVE_ROOMS);
+            databaseService.getUser(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_USER);
         }
 
         @Override
@@ -142,13 +162,14 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context contextFrom, Intent intentFrom) {
+            // FROM DATABASESERVICE
             if (intentFrom != null) {
-                if (intentFrom.hasExtra(REQUEST_CODE) && intentFrom.hasExtra(DatabaseService.STATUS_CODE)) {
-                    int statusCode = intentFrom.getIntExtra(DatabaseService.STATUS_CODE, 0);
+                if (intentFrom.hasExtra(REQUEST_CODE_SERVICE) && intentFrom.hasExtra(STATUS_CODE_SERVICE)) {
+                    int statusCode = intentFrom.getIntExtra(STATUS_CODE_SERVICE, 0);
                     switch (statusCode) {
                         case 200:
                             // GET INACTIVE ROOMS BROADCAST
-                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_INACTIVE_ROOMS) == 0) {
+                            if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_INACTIVE_ROOMS) == 0) {
                                 linearLayoutAddRoom.setVisibility(View.VISIBLE);
 
                                 ArrayList<Room> listRooms = intentFrom.getParcelableArrayListExtra(INTENT_ROOM);
@@ -159,24 +180,45 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                                 spinnerRooms.setAdapter(arrayRooms);
 
                             // ADD ROOM BROADCAST
-                            } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_ADD_ROOM) == 0) {
+                            } else if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_ADD_ROOM) == 0) {
                                 databaseService.getActiveRooms(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM);
+
+                            // GET USER
+                            } else if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_USER) == 0) {
+                                user = intentFrom.getParcelableExtra(INTENT_USER);
                             }
 
                             break;
                         case 204:
-                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_INACTIVE_ROOMS) == 0) {
+                            // GET INACTIVE ROOMS BROADCAST
+                            if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_INACTIVE_ROOMS) == 0) {
                                 linearLayoutAddRoom.setVisibility(View.GONE);
                             }
 
                             break;
-                        case 401:
-                            break;
-                        case 404:
-                        case 500:
-                            break;
-                        default:
-                            break;
+                    }
+
+                // FROM CLIENTSOCKET
+                } else if (intentFrom.hasExtra(ClientSocket.REQUEST_CODE_SOCKET)) {
+                    if (intentFrom.getStringExtra(REQUEST_CODE_SOCKET).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SOCKET_WRITE_1) == 0) {
+                        if (!intentFrom.getBooleanExtra(ERROR_SOCKET, true)) {
+                            dialogAddDevice = new AlertDialog.Builder(getContext())
+                                    .setMessage(R.string.dialogSettingNewDevice)
+                                    .show();
+                            clientSocket.read(2, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SOCKET_READ_2);
+                        } else {
+                            toast.makeToastBlue(R.drawable.ic_baseline_error_24, getString(R.string.toastErrorConnectionDevice));
+                        }
+                    } else if (intentFrom.getStringExtra(REQUEST_CODE_SOCKET).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SOCKET_READ_2) == 0) {
+                        if (!intentFrom.getBooleanExtra(ERROR_SOCKET, true)) {
+                            roomSelected = new Room(intentFrom.getStringExtra(MESSAGE_SOCKET), null);
+                            databaseService.addRoom(setting.readToken(), roomSelected, BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_ADD_ROOM);
+
+                            dialogAddDevice.dismiss();
+                        } else {
+                            dialogAddDevice.dismiss();
+                            toast.makeToastBlue(R.drawable.ic_baseline_error_24, getString(R.string.toastErrorConnectionDevice));
+                        }
                     }
                 }
             }

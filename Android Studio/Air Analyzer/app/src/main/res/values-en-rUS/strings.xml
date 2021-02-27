@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Air Analyzer</string>
     <string name="addDevice">Add device</string>
@@ -111,5 +112,5 @@
         <item>@string/question15</item>
     </array>
 
-    <string name="formatDate">dd/MM/yyyy</string>
+    <string name="formatDate">MM/dd/yyyy</string>
 </resources>

@@ -53,6 +53,24 @@ void Screen::showInstallationWiFiPage(const String messages[6], uint8_t result) 
     } while (screen->nextPage());
 }
 
+void Screen::showInstallationTimezonePage(const String messages[3], int8_t timezone) {
+    screen->firstPage();
+    do {
+        drawMessage(positionMessageInstallationTimezonePage[0], positionMessageInstallationTimezonePage[2], messages[0]);
+        drawMessage(positionMessageInstallationTimezonePage[0], positionMessageInstallationTimezonePage[3], messages[1]);
+        drawMessage(positionMessageInstallationTimezonePage[1], positionMessageInstallationTimezonePage[4], messages[2] + String(timezone));
+    } while (screen->nextPage());
+}
+
+void Screen::showUpgradeConfigurationToVersionTwoPage(const String messages[2], String localIP) {
+    screen->firstPage();
+    do {
+        drawMessage(positionMessageUpgradeConfigurationToVersionTwoPage[0], positionMessageUpgradeConfigurationToVersionTwoPage[2], messages[0]);
+        drawMessage(positionMessageUpgradeConfigurationToVersionTwoPage[0], positionMessageUpgradeConfigurationToVersionTwoPage[3], messages[1]);
+        drawMessage(positionMessageUpgradeConfigurationToVersionTwoPage[1], positionMessageUpgradeConfigurationToVersionTwoPage[4], localIP);
+    } while (screen->nextPage());
+}
+
 void Screen::showLoadingPage(String message, float percentage) {
     screen->firstPage();
     do {

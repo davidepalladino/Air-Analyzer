@@ -24,32 +24,20 @@ public class Room implements Parcelable {
         name = in.readString();
     }
 
-    public static final Creator<Room> CREATOR = new Creator<Room>() {
-        @Override
-        public Room createFromParcel(Parcel in) {
-            return new Room(in);
-        }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-        @Override
-        public Room[] newArray(int size) {
-            return new Room[size];
-        }
-    };
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     @Override
@@ -62,6 +50,18 @@ public class Room implements Parcelable {
 
         return returnString;
     }
+
+    public static final Creator<Room> CREATOR = new Creator<Room>() {
+        @Override
+        public Room createFromParcel(Parcel in) {
+            return new Room(in);
+        }
+
+        @Override
+        public Room[] newArray(int size) {
+            return new Room[size];
+        }
+    };
 
     /**
      * Describe the kinds of special objects contained in this Parcelable

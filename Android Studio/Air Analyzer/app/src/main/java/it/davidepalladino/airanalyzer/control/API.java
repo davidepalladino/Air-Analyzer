@@ -1,4 +1,5 @@
 package it.davidepalladino.airanalyzer.control;
+
 import java.util.ArrayList;
 
 import it.davidepalladino.airanalyzer.model.MeasureAverage;
@@ -6,6 +7,7 @@ import it.davidepalladino.airanalyzer.model.Login;
 import it.davidepalladino.airanalyzer.model.MeasureFull;
 import it.davidepalladino.airanalyzer.model.Room;
 import it.davidepalladino.airanalyzer.model.Signup;
+import it.davidepalladino.airanalyzer.model.User;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -14,8 +16,8 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 public interface API {
-    String BASE_URL = "http://192.168.0.2:8008/";
-    //String BASE_URL = "http://airanalyzer.servehttp.com:50208/";
+    String BASE_URL_LOCAL = "http://192.168.0.2:8008/";
+    String BASE_URL_REMOTE = "http://airanalyzer.servehttp.com:50208/";
 
     @POST("api/login")
     Call<Login.Response> login(@Body Login login);
@@ -28,6 +30,9 @@ public interface API {
 
     @GET("api/checkEmail")
     Call<Signup.NoResponse> checkEmail(@Query("email") String email);
+
+    @GET("api/getUser")
+    Call<User> getUser(@Header("Authorization") String token);
 
     @GET("api/airanalyzer/getActiveRooms")
     Call<ArrayList<Room>> getActiveRooms(@Header("Authorization") String token);

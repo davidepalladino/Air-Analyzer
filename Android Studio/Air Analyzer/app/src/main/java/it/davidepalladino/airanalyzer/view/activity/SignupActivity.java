@@ -28,7 +28,9 @@ import it.davidepalladino.airanalyzer.view.dialog.SignupDialog;
 import it.davidepalladino.airanalyzer.view.widget.Toast;
 
 import static it.davidepalladino.airanalyzer.control.CheckField.*;
-import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE;
+import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.control.DatabaseService.STATUS_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_BROADCAST;
 
 public class SignupActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, TextWatcherField.AuthTextWatcherCallback {
     private static final String BROADCAST_REQUEST_CODE_MASTER = "SignupActivity";
@@ -198,7 +200,7 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
     protected void onResume() {
         super.onResume();
 
-        registerReceiver(broadcastReceiver, new IntentFilter(DatabaseService.BROADCAST));
+        registerReceiver(broadcastReceiver, new IntentFilter(INTENT_BROADCAST));
 
         Intent intentDatabaseService = new Intent(SignupActivity.this, DatabaseService.class);
         bindService(intentDatabaseService, serviceConnection, BIND_AUTO_CREATE);
@@ -327,24 +329,24 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
         @Override
         public void onReceive(Context contextFrom, Intent intentFrom) {
         if (intentFrom != null) {
-            if (intentFrom.hasExtra(REQUEST_CODE) && intentFrom.hasExtra(DatabaseService.STATUS_CODE)) {
+            if (intentFrom.hasExtra(REQUEST_CODE_SERVICE) && intentFrom.hasExtra(STATUS_CODE_SERVICE)) {
                 Intent intentTo = null;
 
-                int statusCode = intentFrom.getIntExtra(DatabaseService.STATUS_CODE, 0);
+                int statusCode = intentFrom.getIntExtra(STATUS_CODE_SERVICE, 0);
                 switch (statusCode) {
                     case 201:
                         // CHECK USERNAME BROADCAST
-                        if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_CHECK_USERNAME) == 0) {
+                        if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_CHECK_USERNAME) == 0) {
                             textViewUsername.setVisibility(View.VISIBLE);
                             textViewUsername.setText(getString(R.string.existsUsername));
 
                         // CHECK EMAIL BROADCAST
-                        } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_CHECK_EMAIL) == 0) {
+                        } else if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_CHECK_EMAIL) == 0) {
                             textViewEmail.setVisibility(View.VISIBLE);
                             textViewEmail.setText(getString(R.string.existsEmail));
 
                         // SIGN UP
-                        } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SIGNUP) == 0) {
+                        } else if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SIGNUP) == 0) {
                             textViewUsername.setVisibility(View.GONE);
                             textViewEmail.setVisibility(View.GONE);
 

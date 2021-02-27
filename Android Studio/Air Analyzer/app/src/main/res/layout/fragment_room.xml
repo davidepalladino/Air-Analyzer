@@ -93,6 +93,15 @@
                 android:id="@+id/graphTemperature"
                 android:layout_width="match_parent"
                 android:layout_height="150dp" />
+
+            <TextView
+                android:id="@+id/textViewNoticeTemperatureGraph"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textStyle="italic"
+                android:visibility="gone" />
         </LinearLayout>
 
         <LinearLayout
@@ -133,6 +142,15 @@
                 android:id="@+id/graphHumidity"
                 android:layout_width="match_parent"
                 android:layout_height="150dp" />
+
+            <TextView
+                android:id="@+id/textViewNoticeHumidityGraph"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textStyle="italic"
+                android:visibility="gone" />
         </LinearLayout>
 
         <LinearLayout

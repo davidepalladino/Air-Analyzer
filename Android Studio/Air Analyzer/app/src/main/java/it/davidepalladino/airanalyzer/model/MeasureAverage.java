@@ -25,18 +25,6 @@ public class MeasureAverage implements Parcelable {
         humidity = in.readFloat();
     }
 
-    public static final Creator<MeasureAverage> CREATOR = new Creator<MeasureAverage>() {
-        @Override
-        public MeasureAverage createFromParcel(Parcel in) {
-            return new MeasureAverage(in);
-        }
-
-        @Override
-        public MeasureAverage[] newArray(int size) {
-            return new MeasureAverage[size];
-        }
-    };
-
     public String getHour() {
         return hour;
     }
@@ -48,6 +36,18 @@ public class MeasureAverage implements Parcelable {
     public float getHumidity() {
         return humidity;
     }
+
+    public static final Creator<MeasureAverage> CREATOR = new Creator<MeasureAverage>() {
+        @Override
+        public MeasureAverage createFromParcel(Parcel in) {
+            return new MeasureAverage(in);
+        }
+
+        @Override
+        public MeasureAverage[] newArray(int size) {
+            return new MeasureAverage[size];
+        }
+    };
 
     /**
      * Describe the kinds of special objects contained in this Parcelable

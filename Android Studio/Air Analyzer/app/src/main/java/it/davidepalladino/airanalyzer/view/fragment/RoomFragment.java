@@ -10,7 +10,6 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.os.Handler;
 import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,24 +34,21 @@ import it.davidepalladino.airanalyzer.control.Setting;
 import it.davidepalladino.airanalyzer.model.MeasureAverage;
 import it.davidepalladino.airanalyzer.model.MeasureFull;
 import it.davidepalladino.airanalyzer.model.Room;
-import it.davidepalladino.airanalyzer.view.activity.LoginActivity;
 import it.davidepalladino.airanalyzer.view.widget.Toast;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.graphics.Typeface.ITALIC;
 import static android.graphics.Typeface.NORMAL;
-import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE;
+import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_BROADCAST;
 import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_MEASURE;
-import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
 
 public class RoomFragment extends Fragment {
     private static final String BROADCAST_REQUEST_CODE_MASTER = "RoomFragment";
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_LAST = "GetDateLast";
     private static final String BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE = "GetDateAverage";
-    private static final String BROADCAST_REQUEST_CODE_EXTENSION_LOGIN = "Login";
     public static final String BUNDLE_ROOM = "ROOM";
     public static final String BUNDLE_DATE_RAW = "DATE_RAW";
-    private static final int MAX_ATTEMPTS_LOGIN = 3;
 
     private GraphView graphTemperature;
     private GraphView graphHumidity;
@@ -61,6 +57,8 @@ public class RoomFragment extends Fragment {
     private TextView textViewLatestTemperature;
     private TextView textViewLatestHumidity;
     private TextView textViewLatestTime;
+    private TextView textViewNoticeTemperatureGraph;
+    private TextView textViewNoticeHumidityGraph;
 
     private Toast toast;
     private Setting setting;
@@ -73,7 +71,6 @@ public class RoomFragment extends Fragment {
     private float maxAverageTemperatureGraph = 0;
     private float minAverageHumidityGraph = 100;
     private float maxAverageHumidityGraph = 0;
-    private int attemptsLogin = 1;
 
     public static RoomFragment newInstance(Room room, Long dateRaw) {
         RoomFragment fragment = new RoomFragment();
@@ -107,7 +104,7 @@ public class RoomFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        getActivity().registerReceiver(broadcastReceiver, new IntentFilter(DatabaseService.BROADCAST));
+        getActivity().registerReceiver(broadcastReceiver, new IntentFilter(INTENT_BROADCAST));
 
         Intent intentDatabaseService = new Intent(getActivity(), DatabaseService.class);
         getActivity().bindService(intentDatabaseService, serviceConnection, BIND_AUTO_CREATE);
@@ -132,6 +129,8 @@ public class RoomFragment extends Fragment {
         textViewLatestTemperature = (TextView) layoutFragment.findViewById(R.id.textViewLatestTemperature);
         textViewLatestHumidity = (TextView) layoutFragment.findViewById(R.id.textViewLatestHumidity);
         textViewLatestTime = (TextView) layoutFragment.findViewById(R.id.textViewLatestTime);
+        textViewNoticeTemperatureGraph = (TextView) layoutFragment.findViewById(R.id.textViewNoticeTemperatureGraph);
+        textViewNoticeHumidityGraph = (TextView) layoutFragment.findViewById(R.id.textViewNoticeHumidityGraph);
 
         textViewDate.setText(getFormattedDate(calendarSelected));
 
@@ -139,7 +138,7 @@ public class RoomFragment extends Fragment {
     }
 
     private String getFormattedDate(Calendar calendarSelected) {
-        SimpleDateFormat formatter = new SimpleDateFormat(getString(R.string.format_date));
+        SimpleDateFormat formatter = new SimpleDateFormat(getString(R.string.formatDate));
         String date = formatter.format(calendarSelected.getTime());
 
         return date;
@@ -259,12 +258,12 @@ public class RoomFragment extends Fragment {
         @Override
         public void onReceive(Context contextFrom, Intent intentFrom) {
             if (intentFrom != null) {
-                if (intentFrom.hasExtra(REQUEST_CODE) && intentFrom.hasExtra(DatabaseService.STATUS_CODE)) {
-                    int statusCode = intentFrom.getIntExtra(DatabaseService.STATUS_CODE, 0);
+                if (intentFrom.hasExtra(REQUEST_CODE_SERVICE) && intentFrom.hasExtra(DatabaseService.STATUS_CODE_SERVICE)) {
+                    int statusCode = intentFrom.getIntExtra(DatabaseService.STATUS_CODE_SERVICE, 0);
                     switch (statusCode) {
                         case 200:
                             // GET DATE LAST BROADCAST
-                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_LAST + room.getId()) == 0) {
+                            if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_LAST + room.getId()) == 0) {
                                 lastMeasureDate = intentFrom.getParcelableExtra(INTENT_MEASURE);
 
                                 textViewLatestTemperature.setTypeface(null, NORMAL);
@@ -283,57 +282,48 @@ public class RoomFragment extends Fragment {
                                 textViewLatestTime.setText(getString(R.string.textViewLatestMeasurementAt) + lastMeasureDate.getDateAndTime().substring(11, 16));
 
                             // GET DATE AVERAGE BROADCAST
-                            } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId()) == 0) {
+                            } else if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId()) == 0) {
                                 listMeasuresDateAverage = intentFrom.getParcelableArrayListExtra(INTENT_MEASURE);
-                                generateBarGraph(listMeasuresDateAverage);
+                                if (listMeasuresDateAverage.size() == 1) {
+                                    graphTemperature.setVisibility(View.GONE);
+                                    graphHumidity.setVisibility(View.GONE);
 
-                            // LOGIN BROADCAST
-                            } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_LOGIN) == 0) {
-                                setting.saveToken(intentFrom.getStringExtra(TOKEN));
-                                attemptsLogin = 1;
+                                    textViewNoticeTemperatureGraph.setVisibility(View.VISIBLE);
+                                    textViewNoticeTemperatureGraph.setText(R.string.noticeGraphTryAgain);
+                                    textViewNoticeHumidityGraph.setVisibility(View.VISIBLE);
+                                    textViewNoticeHumidityGraph.setText(R.string.noticeGraphTryAgain);
+                                } else {
+                                    graphTemperature.setVisibility(View.VISIBLE);
+                                    graphHumidity.setVisibility(View.VISIBLE);
+
+                                    textViewNoticeTemperatureGraph.setVisibility(View.GONE);
+                                    textViewNoticeHumidityGraph.setVisibility(View.GONE);
+
+                                    generateBarGraph(listMeasuresDateAverage);
+                                }
                             }
 
                             break;
                         case 204:
-                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_LAST + room.getId()) == 0) {
+                            // GET DATE LAST BROADCAST
+                            if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_LAST + room.getId()) == 0) {
                                 textViewLatestTemperature.setTypeface(null, ITALIC);
                                 textViewLatestHumidity.setTypeface(null, ITALIC);
 
                                 textViewLatestTemperature.setText(getString(R.string.textViewNone));
                                 textViewLatestHumidity.setText(getString(R.string.textViewNone));
-                            } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId()) == 0) {
-                                String messageToast = getString(R.string.toastNoMeasuresOnDate) + "'";
-                                if (room.getName() != null) {
-                                    messageToast += room.getName() + "'";
-                                } else {
-                                    messageToast += room.getId() + "'";
-                                }
 
-                                toast.makeToastBlue(R.drawable.ic_outline_info_24_toast, messageToast);
+                            // GET DATE AVERAGE BROADCAST
+                            } else if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId()) == 0) {
+                                graphTemperature.setVisibility(View.GONE);
+                                graphHumidity.setVisibility(View.GONE);
+
+                                textViewNoticeTemperatureGraph.setVisibility(View.VISIBLE);
+                                textViewNoticeTemperatureGraph.setText(R.string.noticeGraphNoMeasure);
+                                textViewNoticeHumidityGraph.setVisibility(View.VISIBLE);
+                                textViewNoticeHumidityGraph.setText(R.string.noticeGraphNoMeasure);
                             }
 
-                            break;
-                        case 401:
-                            if (attemptsLogin <= MAX_ATTEMPTS_LOGIN) {
-                                new Handler().postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        databaseService.login(setting.readLogin(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_LOGIN);
-                                        attemptsLogin++;
-                                    }
-                                }, 1000);
-                            } else {
-                                Intent intentTo = new Intent(getActivity(), LoginActivity.class);
-                                startActivity(intentTo);
-                                getActivity().finish();
-                            }
-
-                            break;
-                        case 404:
-                        case 500:
-                            toast.makeToastBlue(R.drawable.ic_baseline_error_24, getString(R.string.toastServerOffline));
-                            break;
-                        default:
                             break;
                     }
                 }

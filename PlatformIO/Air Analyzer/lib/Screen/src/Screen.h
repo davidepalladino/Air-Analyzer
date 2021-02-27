@@ -7,8 +7,8 @@
   * @author Davide Palladino
   * @contact me@davidepalladino.com
   * @website www.davidepalladino.com
-  * @version 1.2.0
-  * @date 25th January, 2021
+  * @version 1.3.0
+  * @date 28th February, 2021
   * 
   * This library is free software; you can redistribute it and/or
   *  modify it under the terms of the GNU General Public
@@ -112,6 +112,20 @@
              *  "1" considering the fourth and fifth messages ; "2" considering the sixth message.
              */
             void showInstallationWiFiPage(const String messages[6], uint8_t result);
+
+            /**
+             * @brief This methods shows an installation page about the timezone.
+             * @param messages Array of three messages to visualize. To the last message will be append the "timezone" value.
+             * @param timezone Value selected and that must be show.
+             */
+            void showInstallationTimezonePage(const String messages[3], int8_t timezone);
+
+            /**
+             * @brief This methods shows an configuration page about the update two version.
+             * @param messages Array of three messages to visualize. To the last message will be append the "localIP" value.
+             * @param localIP Value selected and that must be show.
+             */
+            void showUpgradeConfigurationToVersionTwoPage(const String messages[2], String localIP);
 
             /**
              * @brief This method shows a page with an loading bar and a description message.

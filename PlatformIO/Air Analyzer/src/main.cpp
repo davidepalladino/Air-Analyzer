@@ -14,7 +14,7 @@
 Button button(pinButton, B_PULLUP, timeLongPress);
 Sensor sensor(addressSensor, humidityResolution, temperatureResolution);
 Screen screen(sensor, pinSCL, pinSDA);
-DatabaseManagement database(sensor, databaseTimezone, databaseMinutesUpdate);
+DatabaseManagement database(sensor, databaseIP);
 
 String wifiSSID;
 String wifiPassword;
@@ -27,14 +27,26 @@ void setup() {
   screen.begin();
 
   /* Checking the version of data on EEPROM, to execute the right update of EEPROM and/or system. */
-  uint8_t gotVersionEEPROM = 0;
+  uint8_t actualVersionEEPROM = 0;
 
   EEPROM.begin(sizeEEPROM);
-  EEPROM.get(addressVersionEEPROM, gotVersionEEPROM);
-  switch (gotVersionEEPROM) {
+  EEPROM.get(addressVersionEEPROM, actualVersionEEPROM);
+
+  switch (actualVersionEEPROM) {
     /* If this is a first utilization about the system, will be launched the installation. */
     case 0:
       installConfiguration(button, screen);
+
+    /* Else if is a first version, will be launched the upgrade to version 2. */
+    case 1:
+      upgradeConfigurationToVersionTwo(screen);
+
+      /* 
+       * Showing a message of complete.
+       * This will have to show after the last update implemented. 
+       */
+      screen.showMessagePage(messagePageInstallationCompleteMessages);
+      delay(timeoutMessage);
 
     default:
       loadConfiguration(sensor, screen, database, wifiSSID, wifiPassword);
@@ -79,8 +91,8 @@ void loop() {
       }
     }
   } else if (resultButton == 1) {
-    if (database.getRoomID() == maxRoomID) {
-      database.setRoomID(minRoomID);
+    if (database.getRoomID() == MAX_ROOM_ID) {
+      database.setRoomID(MIN_ROOM_ID);
     } else {
       database.setRoomID(database.getRoomID() + 1);
     }

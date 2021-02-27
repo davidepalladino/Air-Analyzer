@@ -2,8 +2,10 @@ package it.davidepalladino.airanalyzer.control;
 
 import android.app.Service;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
+import android.text.format.Formatter;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -14,22 +16,23 @@ import it.davidepalladino.airanalyzer.model.MeasureAverage;
 import it.davidepalladino.airanalyzer.model.MeasureFull;
 import it.davidepalladino.airanalyzer.model.Room;
 import it.davidepalladino.airanalyzer.model.Signup;
+import it.davidepalladino.airanalyzer.model.User;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_BROADCAST;
 import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_MEASURE;
 import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_ROOM;
+import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_USER;
 import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
 
 public class DatabaseService extends Service {
-    private static final String DATABASE_SERVICE = "DATABASE_SERVICE";
-
-    public static final String BROADCAST = "it.davidepalladino.airanalyzer.broadcast";
-    public static final String REQUEST_CODE = "REQUEST_CODE";
-    public static final String STATUS_CODE = "STATUS_CODE";
+    public static final String DATABASE_SERVICE = "DATABASE_SERVICE";
+    public static final String REQUEST_CODE_SERVICE = "REQUEST_CODE_SERVICE";
+    public static final String STATUS_CODE_SERVICE = "STATUS_CODE_SERVICE";
 
     private API api;
 
@@ -48,8 +51,18 @@ public class DatabaseService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        String firstGroupIP = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
+
+        String baseURL;
+        if (firstGroupIP.substring(0, 3).compareTo("192") == 0 || firstGroupIP.substring(0, 2).compareTo("10") == 0) {
+            baseURL = API.BASE_URL_LOCAL;
+        } else {
+            baseURL = API.BASE_URL_REMOTE;
+        }
+
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(API.BASE_URL)
+                .baseUrl(baseURL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -69,19 +82,19 @@ public class DatabaseService extends Service {
         Log.d("DatabaseService", "Service destroyed");
     }
 
-    public void login(Login login, String requestCode) {
+    public void login(Login login, String requestCodeBroadcast) {
         Call<Login.Response> call = api.login(login);
         call.enqueue(new Callback<Login.Response>() {
             @Override
             public void onResponse(Call<Login.Response> call, Response<Login.Response> response) {
-                Intent intentBroadcast = new Intent(BROADCAST);
-                intentBroadcast.putExtra(REQUEST_CODE, requestCode);
+                Intent intentBroadcast = new Intent(INTENT_BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
 
                 if (response.code() == 200) {
                     intentBroadcast.putExtra(TOKEN, response.body().getToken());
                 }
 
-                intentBroadcast.putExtra(STATUS_CODE, response.code());
+                intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());
                 sendBroadcast(intentBroadcast);
             }
 
@@ -91,14 +104,14 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void signup(Signup signup, String requestCode) {
+    public void signup(Signup signup, String requestCodeBroadcast) {
         Call<Signup.NoResponse> call = api.signup(signup);
         call.enqueue(new Callback<Signup.NoResponse>() {
             @Override
             public void onResponse(Call<Signup.NoResponse> call, Response<Signup.NoResponse> response) {
-                Intent intentBroadcast = new Intent(BROADCAST);
-                intentBroadcast.putExtra(REQUEST_CODE, requestCode);
-                intentBroadcast.putExtra(STATUS_CODE, response.code());
+                Intent intentBroadcast = new Intent(INTENT_BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
+                intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());
                 sendBroadcast(intentBroadcast);
             }
 
@@ -109,15 +122,15 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void checkUsername(String username, String requestCode) {
+    public void checkUsername(String username, String requestCodeBroadcast) {
         if (!username.isEmpty()) {
             Call<Signup.NoResponse> call = api.checkUsername(username.toString());
             call.enqueue(new Callback<Signup.NoResponse>() {
                 @Override
                 public void onResponse(Call<Signup.NoResponse> call, Response<Signup.NoResponse> response) {
-                    Intent intentBroadcast = new Intent(BROADCAST);
-                    intentBroadcast.putExtra(REQUEST_CODE, requestCode);
-                    intentBroadcast.putExtra(STATUS_CODE, response.code());
+                    Intent intentBroadcast = new Intent(INTENT_BROADCAST);
+                    intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
+                    intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());
                     sendBroadcast(intentBroadcast);
                 }
 
@@ -129,15 +142,15 @@ public class DatabaseService extends Service {
         }
     }
 
-    public void checkEmail(String email, String requestCode) {
+    public void checkEmail(String email, String requestCodeBroadcast) {
         if (!email.isEmpty()) {
             Call<Signup.NoResponse> call = api.checkEmail(email.toString());
             call.enqueue(new Callback<Signup.NoResponse>() {
                 @Override
                 public void onResponse(Call<Signup.NoResponse> call, Response<Signup.NoResponse> response) {
-                    Intent intentBroadcast = new Intent(BROADCAST);
-                    intentBroadcast.putExtra(REQUEST_CODE, requestCode);
-                    intentBroadcast.putExtra(STATUS_CODE, response.code());
+                    Intent intentBroadcast = new Intent(INTENT_BROADCAST);
+                    intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
+                    intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());
                     sendBroadcast(intentBroadcast);
                 }
 
@@ -149,16 +162,37 @@ public class DatabaseService extends Service {
         }
     }
 
-    public void getActiveRooms(String token, String requestCode) {
+    public void getUser(String token, String requestCodeBroadcast) {
+        Call<User> call = api.getUser("Bearer " + token);
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                User user = response.body();
+
+                Intent intentBroadcast = new Intent(INTENT_BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
+                intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());
+                intentBroadcast.putExtra(INTENT_USER, user);
+                sendBroadcast(intentBroadcast);
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void getActiveRooms(String token, String requestCodeBroadcast) {
         Call<ArrayList<Room>> call = api.getActiveRooms("Bearer " + token);
         call.enqueue(new Callback<ArrayList<Room>>() {
             @Override
             public void onResponse(Call<ArrayList<Room>> call, Response<ArrayList<Room>> response) {
                 ArrayList<Room> listRooms = response.body();
 
-                Intent intentBroadcast = new Intent(BROADCAST);
-                intentBroadcast.putExtra(REQUEST_CODE, requestCode);
-                intentBroadcast.putExtra(STATUS_CODE, response.code());
+                Intent intentBroadcast = new Intent(INTENT_BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
+                intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());
                 intentBroadcast.putParcelableArrayListExtra(INTENT_ROOM, listRooms);
                 sendBroadcast(intentBroadcast);
             }
@@ -170,16 +204,16 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void getInactiveRooms(String token, String requestCode) {
+    public void getInactiveRooms(String token, String requestCodeBroadcast) {
         Call<ArrayList<Room>> call = api.getInactiveRooms("Bearer " + token);
         call.enqueue(new Callback<ArrayList<Room>>() {
             @Override
             public void onResponse(Call<ArrayList<Room>> call, Response<ArrayList<Room>> response) {
                 ArrayList<Room> listRooms = response.body();
 
-                Intent intentBroadcast = new Intent(BROADCAST);
-                intentBroadcast.putExtra(REQUEST_CODE, requestCode);
-                intentBroadcast.putExtra(STATUS_CODE, response.code());
+                Intent intentBroadcast = new Intent(INTENT_BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
+                intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());
                 intentBroadcast.putParcelableArrayListExtra(INTENT_ROOM, listRooms);
                 sendBroadcast(intentBroadcast);
             }
@@ -191,14 +225,14 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void renameRoom(String token, Room room, String requestCode) {
+    public void renameRoom(String token, Room room, String requestCodeBroadcast) {
         Call<Room.NoResponse> call = api.renameRoom("Bearer " + token, room);
         call.enqueue(new Callback<Room.NoResponse>() {
             @Override
             public void onResponse(Call<Room.NoResponse> call, Response<Room.NoResponse> response) {
-                Intent intentBroadcast = new Intent(BROADCAST);
-                intentBroadcast.putExtra(REQUEST_CODE, requestCode);
-                intentBroadcast.putExtra(STATUS_CODE, response.code());
+                Intent intentBroadcast = new Intent(INTENT_BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
+                intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());
                 sendBroadcast(intentBroadcast);
             }
 
@@ -209,14 +243,14 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void addRoom(String token, Room room, String requestCode) {
+    public void addRoom(String token, Room room, String requestCodeBroadcast) {
         Call<Room.NoResponse> call = api.addRoom("Bearer " + token, room);
         call.enqueue(new Callback<Room.NoResponse>() {
             @Override
             public void onResponse(Call<Room.NoResponse> call, Response<Room.NoResponse> response) {
-                Intent intentBroadcast = new Intent(BROADCAST);
-                intentBroadcast.putExtra(REQUEST_CODE, requestCode);
-                intentBroadcast.putExtra(STATUS_CODE, response.code());
+                Intent intentBroadcast = new Intent(INTENT_BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
+                intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());
                 sendBroadcast(intentBroadcast);
             }
 
@@ -227,14 +261,14 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void removeRoom(String token, Room room, String requestCode) {
+    public void removeRoom(String token, Room room, String requestCodeBroadcast) {
         Call<Room.NoResponse> call = api.removeRoom("Bearer " + token, room);
         call.enqueue(new Callback<Room.NoResponse>() {
             @Override
             public void onResponse(Call<Room.NoResponse> call, Response<Room.NoResponse> response) {
-                Intent intentBroadcast = new Intent(BROADCAST);
-                intentBroadcast.putExtra(REQUEST_CODE, requestCode);
-                intentBroadcast.putExtra(STATUS_CODE, response.code());
+                Intent intentBroadcast = new Intent(INTENT_BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
+                intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());
                 sendBroadcast(intentBroadcast);
             }
 
@@ -245,7 +279,7 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void getMeasureDateLatest(String token, String roomID, Calendar calendarSelected, String requestCode) {
+    public void getMeasureDateLatest(String token, String roomID, Calendar calendarSelected, String requestCodeBroadcast) {
         Call<MeasureFull> call = api.getMeasureDateLatest(
                 "Bearer " + token,
                 roomID,
@@ -259,9 +293,9 @@ public class DatabaseService extends Service {
             public void onResponse(Call<MeasureFull> call, Response<MeasureFull> response) {
                 MeasureFull measure = response.body();
 
-                Intent intentBroadcast = new Intent(BROADCAST);
-                intentBroadcast.putExtra(REQUEST_CODE, requestCode);
-                intentBroadcast.putExtra(STATUS_CODE, response.code());
+                Intent intentBroadcast = new Intent(INTENT_BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
+                intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());
                 intentBroadcast.putExtra(INTENT_MEASURE, measure);
                 sendBroadcast(intentBroadcast);
             }
@@ -273,7 +307,7 @@ public class DatabaseService extends Service {
         });
     }
 
-    public void getMeasuresDateAverage(String token, String roomID, Calendar calendarSelected, String requestCode) {
+    public void getMeasuresDateAverage(String token, String roomID, Calendar calendarSelected, String requestCodeBroadcast) {
         Call<ArrayList<MeasureAverage>> call = api.getMeasuresDateAverage(
                 "Bearer " + token,
                 roomID,
@@ -287,9 +321,9 @@ public class DatabaseService extends Service {
             public void onResponse(Call<ArrayList<MeasureAverage>> call, Response<ArrayList<MeasureAverage>> response) {
                 ArrayList<MeasureAverage> listMeasures = response.body();
 
-                Intent intentBroadcast = new Intent(BROADCAST);
-                intentBroadcast.putExtra(REQUEST_CODE, requestCode);
-                intentBroadcast.putExtra(STATUS_CODE, response.code());
+                Intent intentBroadcast = new Intent(INTENT_BROADCAST);
+                intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
+                intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());
                 intentBroadcast.putParcelableArrayListExtra(INTENT_MEASURE, listMeasures);
                 sendBroadcast(intentBroadcast);
             }

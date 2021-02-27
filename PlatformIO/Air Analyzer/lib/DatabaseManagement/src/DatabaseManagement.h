@@ -7,8 +7,8 @@
   * @author Davide Palladino
   * @contact me@davidepalladino.com
   * @website www.davidepalladino.com
-  * @version 1.1.1
-  * @date 31th January, 2021
+  * @version 1.2.0
+  * @date 28th February, 2021
   * 
   * This library is free software; you can redistribute it and/or
   *  modify it under the terms of the GNU General Public
@@ -56,7 +56,7 @@
     #endif
 
     #ifndef CONFIGDATABASE_H
-        #include "..\..\..\configDatabase.h"
+        #include "..\..\..\configDatabaseLocal.h"
     #endif
 
     #define TIMEOUT_UPDATE_DATABASE_ERROR 30000                         // Timeout for next update of database in case of error
@@ -73,15 +73,16 @@
             /** 
              * @brief This constructor creates the object setting only the subjec class, the timezone and the minutes for every loading.
              * @param sensor Subject object that will notify.
-             * @param timezone Timezone is expressed in hour.
-             * @param totalMinuteUpdate Total minutes for every update.
+             * @param databaseIP Array with the IP where is located the database.
              */
-            DatabaseManagement(Sensor& sensor, int8_t timezone, uint8_t totalMinutesUpdate);
+            DatabaseManagement(Sensor& sensor, const uint8_t databaseIP[4]);
 
             /** 
              * @brief This method initializes the NTP object.
+             * @param timezone Timezone is expressed in hour.
+             * @param totalMinuteUpdate Total minutes for every update.
              */
-            void begin();
+            void begin(int8_t timezone, uint8_t totalMinutesUpdate);
 
             /**
              * @brief This method sets the room ID.
@@ -94,6 +95,12 @@
              * @return Number of room.
              */
             uint8_t getRoomID();
+
+            /**
+             * @brief This method sets the user ID.
+             * @param userID ID of user.
+             */
+            void setUserID(uint32_t userID);
 
             /**
              * @brief This method gets the status indicator about the error on update.
@@ -114,6 +121,7 @@
             IPAddress* databaseAddress;
             MySQL_Connection* database;
             uint8_t roomID;
+            uint32_t userID;
             bool isErrorUpdate;
             unsigned long endTimeoutUpdateDabataseError;
 

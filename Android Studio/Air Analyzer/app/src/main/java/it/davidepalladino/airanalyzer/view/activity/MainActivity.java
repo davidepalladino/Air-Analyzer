@@ -36,6 +36,7 @@ import java.util.Iterator;
 
 import it.davidepalladino.airanalyzer.R;
 import it.davidepalladino.airanalyzer.control.DatabaseService;
+import it.davidepalladino.airanalyzer.model.User;
 import it.davidepalladino.airanalyzer.view.widget.Toast;
 import it.davidepalladino.airanalyzer.view.widget.ViewPagerRoom;
 import it.davidepalladino.airanalyzer.control.Setting;
@@ -45,8 +46,11 @@ import it.davidepalladino.airanalyzer.view.dialog.RenameRoomDialog;
 import it.davidepalladino.airanalyzer.view.fragment.AddFragment;
 import it.davidepalladino.airanalyzer.view.fragment.RoomFragment;
 
-import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE;
+import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.control.DatabaseService.STATUS_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_BROADCAST;
 import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_ROOM;
+import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_USER;
 import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, DatePickerDialog.OnDateSetListener, ViewPager.OnPageChangeListener {
@@ -121,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     protected void onResume() {
         super.onResume();
 
-        registerReceiver(broadcastReceiver, new IntentFilter(DatabaseService.BROADCAST));
+        registerReceiver(broadcastReceiver, new IntentFilter(INTENT_BROADCAST));
 
         Intent intentDatabaseService = new Intent(MainActivity.this, DatabaseService.class);
         bindService(intentDatabaseService, serviceConnection, BIND_AUTO_CREATE);
@@ -340,36 +344,41 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         @Override
         public void onReceive(Context contextFrom, Intent intentFrom) {
             if (intentFrom != null) {
-                if (intentFrom.hasExtra(DatabaseService.REQUEST_CODE) && intentFrom.hasExtra(DatabaseService.STATUS_CODE)) {
-                    int statusCode = intentFrom.getIntExtra(DatabaseService.STATUS_CODE, 0);
+                if (intentFrom.hasExtra(REQUEST_CODE_SERVICE) && intentFrom.hasExtra(STATUS_CODE_SERVICE)) {
+                    int statusCode = intentFrom.getIntExtra(STATUS_CODE_SERVICE, 0);
                     switch (statusCode) {
                         case 200:
                             // GET ACTIVE ROOMS BROADCAST from this Activity
-                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM) == 0) {
+                            if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM) == 0) {
                                 ArrayList<Room> listRooms = intentFrom.getParcelableArrayListExtra(INTENT_ROOM);
 
                                 createViewPagerRoom(listRooms);
                                 viewPagerRooms.setCurrentItem(currentPage);
 
                             // GET ACTIVE ROOMS BROADCAST from this AddFragment
-                            } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(AddFragment.BROADCAST_REQUEST_CODE_MASTER + AddFragment.BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM) == 0) {
+                            } else if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(AddFragment.BROADCAST_REQUEST_CODE_MASTER + AddFragment.BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM) == 0) {
                                 ArrayList<Room> listRooms = intentFrom.getParcelableArrayListExtra(INTENT_ROOM);
 
-                                Room roomSelected = addFragment.roomSelected;
+                                Room roomSelected = addFragment.getRoomSelected();
 
                                 createViewPagerRoom(listRooms);
                                 viewPagerRooms.setCurrentItem(pagerAdapterRoom.getPositionRoom(roomSelected));
 
-                                // SET ROOM BROADCAST
+                                swipeRefreshLayout.setEnabled(true);
+                                floatingActionButtonCalendar.setVisibility(View.VISIBLE);
+
+                                onCreateOptionsMenu(toolbarMain.getMenu());
+
+                            // SET ROOM BROADCAST
                             // REMOVE ROOM BROADCAST
                             } else if (
-                                    (intentFrom.getStringExtra(REQUEST_CODE).compareTo(RenameRoomDialog.BROADCAST_REQUEST_CODE_MASTER + RenameRoomDialog.BROADCAST_REQUEST_CODE_EXTENSION_SET_ROOM) == 0) ||
-                                     (intentFrom.getStringExtra(REQUEST_CODE).compareTo(RemoveRoomDialog.BROADCAST_REQUEST_CODE_MASTER + RemoveRoomDialog.BROADCAST_REQUEST_CODE_EXTENSION_REMOVE_ROOM) == 0)
+                                    (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(RenameRoomDialog.BROADCAST_REQUEST_CODE_MASTER + RenameRoomDialog.BROADCAST_REQUEST_CODE_EXTENSION_SET_ROOM) == 0) ||
+                                     (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(RemoveRoomDialog.BROADCAST_REQUEST_CODE_MASTER + RemoveRoomDialog.BROADCAST_REQUEST_CODE_EXTENSION_REMOVE_ROOM) == 0)
                             ) {
                                 databaseService.getActiveRooms(setting.readToken(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM);
 
                             // LOGIN BROADCAST
-                            } else if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_LOGIN) == 0) {
+                            } else if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_LOGIN) == 0) {
                                 setting.saveToken(intentFrom.getStringExtra(TOKEN));
                                 attemptsLogin = 1;
                             }
@@ -377,7 +386,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                             break;
                         case 204:
                             // GET ACTIVE ROOMS BROADCAST from this Activity
-                            if (intentFrom.getStringExtra(REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM) == 0) {
+                            if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_ACTIVE_ROOM) == 0) {
                                 createViewPagerRoom(null);
                                 viewPagerRooms.setCurrentItem(currentPage);
                             }
@@ -393,6 +402,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                                     }
                                 }, 1000);
                             } else {
+                                toast.makeToastBlue(R.drawable.ic_baseline_error_24, getString(R.string.toastUserError));
                                 Intent intentTo = new Intent(MainActivity.this, LoginActivity.class);
                                 startActivity(intentTo);
                                 finish();

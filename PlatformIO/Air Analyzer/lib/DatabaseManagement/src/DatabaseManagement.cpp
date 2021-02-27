@@ -1,14 +1,8 @@
 #include <DatabaseManagement.h>
 
-DatabaseManagement::DatabaseManagement(Sensor& sensor, int8_t timezone, uint8_t totalMinutesUpdate) : sensor(sensor) {
+DatabaseManagement::DatabaseManagement(Sensor& sensor, const uint8_t databaseIP[4]) : sensor(sensor) {
     this->sensor.addObserver(this);
 
-    if (totalMinutesUpdate > 240) {
-        totalMinutesUpdate = 240;
-    }
-
-    datetime = new DatetimeInterval(timezone, totalMinutesUpdate);
-    
     databaseAddress = new IPAddress(databaseIP[0], databaseIP[1], databaseIP[2], databaseIP[3]);
     database = new MySQL_Connection((Client*) new WiFiClient());
 
@@ -18,7 +12,12 @@ DatabaseManagement::DatabaseManagement(Sensor& sensor, int8_t timezone, uint8_t 
     endTimeoutUpdateDabataseError = 0;
 }
 
-void DatabaseManagement::begin() {
+void DatabaseManagement::begin(int8_t timezone, uint8_t totalMinutesUpdate) {
+    if (totalMinutesUpdate > 240) {
+        totalMinutesUpdate = 240;
+    }
+
+    datetime = new DatetimeInterval(timezone, totalMinutesUpdate);
     datetime->begin();
     //executeQuery(DM_ROOM);
 }
@@ -27,11 +26,13 @@ void DatabaseManagement::setRoomID(uint8_t roomID) { this->roomID = roomID; }
 
 uint8_t DatabaseManagement::getRoomID() { return roomID; }
 
+void DatabaseManagement::setUserID(uint32_t userID) { this->userID = userID; }
+
 bool DatabaseManagement::getIsErrorUpdate() { return isErrorUpdate; }
 
 char* DatabaseManagement::createQueryInsertRoom() {
-    String queryString = "INSERT INTO airanalyzer_1.Room (ID) VALUES (" + 
-                    String(roomID) + ")";
+    String queryString = "UPDATE airanalyzer_" + String(userID) + ".Room SET IsActive = 1 WHERE ID = " + 
+                    String(roomID);
 
     uint8_t sizeQuery = queryString.length() + 1;
     char* queryChar = new char[sizeQuery];
@@ -43,7 +44,7 @@ char* DatabaseManagement::createQueryInsertRoom() {
 char* DatabaseManagement::createQueryInsertValues() {
     delay(1000);
 
-    String queryString = "INSERT INTO airanalyzer_1.Measure (DateAndTime, DayWeek, Room, Temperature, Humidity) VALUES ('" + 
+    String queryString = "INSERT INTO airanalyzer_" + String(userID) + ".Measure (DateAndTime, DayWeek, Room, Temperature, Humidity) VALUES ('" + 
                     String(datetime->getActualYear()) + "-" +
                     String(datetime->getActualMonth()) + "-" +
                     String(datetime->getActualDay()) + " " +

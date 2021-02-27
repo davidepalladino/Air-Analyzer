@@ -17,6 +17,7 @@ import it.davidepalladino.airanalyzer.control.DatabaseService;
 import it.davidepalladino.airanalyzer.control.Setting;
 import it.davidepalladino.airanalyzer.model.Login;
 
+import static it.davidepalladino.airanalyzer.control.DatabaseService.STATUS_CODE_SERVICE;
 import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
 import static it.davidepalladino.airanalyzer.control.IntentConst.*;
 
@@ -41,7 +42,7 @@ public class SplashActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        registerReceiver(broadcastReceiver, new IntentFilter(DatabaseService.BROADCAST));
+        registerReceiver(broadcastReceiver, new IntentFilter(INTENT_BROADCAST));
 
         Intent intentDatabaseService = new Intent(SplashActivity.this, DatabaseService.class);
         bindService(intentDatabaseService, serviceConnection, BIND_AUTO_CREATE);
@@ -81,11 +82,11 @@ public class SplashActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context contextFrom, Intent intentFrom) {
             if (intentFrom != null) {
-                if (intentFrom.hasExtra(DatabaseService.REQUEST_CODE) && intentFrom.hasExtra(DatabaseService.STATUS_CODE)) {
-                    if (intentFrom.getStringExtra(DatabaseService.REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER) == 0) {
+                if (intentFrom.hasExtra(DatabaseService.REQUEST_CODE_SERVICE) && intentFrom.hasExtra(STATUS_CODE_SERVICE)) {
+                    if (intentFrom.getStringExtra(DatabaseService.REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER) == 0) {
                         Intent intentTo = null;
 
-                        int statusCode = intentFrom.getIntExtra(DatabaseService.STATUS_CODE, 0);
+                        int statusCode = intentFrom.getIntExtra(STATUS_CODE_SERVICE, 0);
                         switch (statusCode) {
                             case 200:
                                 intentTo = new Intent(SplashActivity.this, MainActivity.class);
@@ -94,13 +95,13 @@ public class SplashActivity extends AppCompatActivity {
                                 break;
                             case 204:
                                 intentTo = new Intent(SplashActivity.this, LoginActivity.class);
-                                intentTo.putExtra(MESSAGE_TOAST, getString(R.string.toastUserNotValidated));
+                                intentTo.putExtra(INTENT_MESSAGE_TOAST, getString(R.string.toastUserNotValidated));
 
                                 break;
                             case 404:
                             case 500:
                                 intentTo = new Intent(SplashActivity.this, LoginActivity.class);
-                                intentTo.putExtra(MESSAGE_TOAST, getString(R.string.toastServerOffline));
+                                intentTo.putExtra(INTENT_MESSAGE_TOAST, getString(R.string.toastServerOffline));
 
                                 break;
                             default:

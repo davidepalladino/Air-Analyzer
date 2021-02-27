@@ -23,7 +23,8 @@ import it.davidepalladino.airanalyzer.model.Login;
 import it.davidepalladino.airanalyzer.view.widget.Toast;
 
 import static it.davidepalladino.airanalyzer.control.CheckField.*;
-import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE;
+import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.control.DatabaseService.STATUS_CODE_SERVICE;
 import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
 import static it.davidepalladino.airanalyzer.control.IntentConst.*;
 
@@ -74,8 +75,8 @@ public class LoginActivity extends AppCompatActivity implements TextWatcherField
         }
 
         Intent intentFrom = getIntent();
-        if (intentFrom != null && intentFrom.hasExtra(MESSAGE_TOAST)) {
-            toast.makeToastBlack(R.drawable.ic_baseline_error_24, intentFrom.getStringExtra(MESSAGE_TOAST));
+        if (intentFrom != null && intentFrom.hasExtra(INTENT_MESSAGE_TOAST)) {
+            toast.makeToastBlack(R.drawable.ic_baseline_error_24, intentFrom.getStringExtra(INTENT_MESSAGE_TOAST));
         }
     }
 
@@ -83,7 +84,7 @@ public class LoginActivity extends AppCompatActivity implements TextWatcherField
     protected void onResume() {
         super.onResume();
 
-        registerReceiver(broadcastReceiver, new IntentFilter(DatabaseService.BROADCAST));
+        registerReceiver(broadcastReceiver, new IntentFilter(INTENT_BROADCAST));
 
         Intent intentDatabaseService = new Intent(LoginActivity.this, DatabaseService.class);
         bindService(intentDatabaseService, serviceConnection, BIND_AUTO_CREATE);
@@ -192,9 +193,9 @@ public class LoginActivity extends AppCompatActivity implements TextWatcherField
         @Override
         public void onReceive(Context contextFrom, Intent intentFrom) {
         if (intentFrom != null) {
-            if (intentFrom.hasExtra(REQUEST_CODE) && intentFrom.hasExtra(DatabaseService.STATUS_CODE)) {
-                if (intentFrom.getStringExtra(DatabaseService.REQUEST_CODE).compareTo(BROADCAST_REQUEST_CODE_MASTER) == 0) {
-                    int statusCode = intentFrom.getIntExtra(DatabaseService.STATUS_CODE, 0);
+            if (intentFrom.hasExtra(REQUEST_CODE_SERVICE) && intentFrom.hasExtra(STATUS_CODE_SERVICE)) {
+                if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER) == 0) {
+                    int statusCode = intentFrom.getIntExtra(STATUS_CODE_SERVICE, 0);
                     switch (statusCode) {
                         case 200:
                             setting.saveToken(intentFrom.getStringExtra(TOKEN));

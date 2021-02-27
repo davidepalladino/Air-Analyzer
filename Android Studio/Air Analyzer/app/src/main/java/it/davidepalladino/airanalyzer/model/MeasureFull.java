@@ -29,18 +29,6 @@ public class MeasureFull implements Parcelable {
         humidity = in.readFloat();
     }
 
-    public static final Creator<MeasureFull> CREATOR = new Creator<MeasureFull>() {
-        @Override
-        public MeasureFull createFromParcel(Parcel in) {
-            return new MeasureFull(in);
-        }
-
-        @Override
-        public MeasureFull[] newArray(int size) {
-            return new MeasureFull[size];
-        }
-    };
-
     public String getDateAndTime() {
         return dateAndTime;
     }
@@ -52,6 +40,18 @@ public class MeasureFull implements Parcelable {
     public float getHumidity() {
         return humidity;
     }
+
+    public static final Creator<MeasureFull> CREATOR = new Creator<MeasureFull>() {
+        @Override
+        public MeasureFull createFromParcel(Parcel in) {
+            return new MeasureFull(in);
+        }
+
+        @Override
+        public MeasureFull[] newArray(int size) {
+            return new MeasureFull[size];
+        }
+    };
 
     /**
      * Describe the kinds of special objects contained in this Parcelable
