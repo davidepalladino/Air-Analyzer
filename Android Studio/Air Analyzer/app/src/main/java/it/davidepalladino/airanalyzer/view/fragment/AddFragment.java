@@ -7,11 +7,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
 import android.os.IBinder;
+import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +24,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import it.davidepalladino.airanalyzer.R;
@@ -33,6 +37,7 @@ import it.davidepalladino.airanalyzer.model.User;
 import it.davidepalladino.airanalyzer.view.widget.Toast;
 
 import static android.content.Context.BIND_AUTO_CREATE;
+import static android.content.Context.WIFI_SERVICE;
 import static it.davidepalladino.airanalyzer.control.ClientSocket.ERROR_SOCKET;
 import static it.davidepalladino.airanalyzer.control.ClientSocket.MESSAGE_SOCKET;
 import static it.davidepalladino.airanalyzer.control.ClientSocket.REQUEST_CODE_SOCKET;
@@ -132,8 +137,26 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
                 break;
             case R.id.buttonAddDevice:
-                clientSocket = new ClientSocket(getContext(), editTextLocalIP.getText().toString(), 8008);
-                clientSocket.write(1, user.getId(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SOCKET_WRITE_1);
+                if (editTextLocalIP.getText().toString().length() != 0) {
+                    WifiManager wifiManager = (WifiManager) getContext().getApplicationContext().getSystemService(WIFI_SERVICE);
+
+                    InetAddress systemIP = null;
+                    InetAddress getIP = null;
+
+                    try {
+                        systemIP = InetAddress.getByName(Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress()));
+                        getIP = InetAddress.getByName(editTextLocalIP.getText().toString());
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (systemIP.getAddress()[0] == getIP.getAddress()[0]) {
+                        clientSocket = new ClientSocket(getContext(), editTextLocalIP.getText().toString(), 8008);
+                        clientSocket.write(1, user.getId(), BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_SOCKET_WRITE_1);
+                    } else {
+                        toast.makeToastBlue(R.drawable.ic_baseline_error_24, getString(R.string.toastErrorLocalNetwork));
+                    }
+                }
 
                 break;
         }

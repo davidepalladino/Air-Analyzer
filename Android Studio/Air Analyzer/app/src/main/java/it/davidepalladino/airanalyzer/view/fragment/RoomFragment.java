@@ -288,10 +288,16 @@ public class RoomFragment extends Fragment {
                                     graphTemperature.setVisibility(View.GONE);
                                     graphHumidity.setVisibility(View.GONE);
 
+                                    int nextHour = Integer.parseInt(listMeasuresDateAverage.get(0).getHour()) + 1;
+                                    if (nextHour > 23) {
+                                        nextHour = 0;
+                                    }
+
                                     textViewNoticeTemperatureGraph.setVisibility(View.VISIBLE);
-                                    textViewNoticeTemperatureGraph.setText(R.string.noticeGraphTryAgain);
+
+                                    textViewNoticeTemperatureGraph.setText(getString(R.string.noticeGraphTryAgain) + String.valueOf(nextHour) + ":00");
                                     textViewNoticeHumidityGraph.setVisibility(View.VISIBLE);
-                                    textViewNoticeHumidityGraph.setText(R.string.noticeGraphTryAgain);
+                                    textViewNoticeHumidityGraph.setText(getString(R.string.noticeGraphTryAgain) + String.valueOf(nextHour) + ":00");
                                 } else {
                                     graphTemperature.setVisibility(View.VISIBLE);
                                     graphHumidity.setVisibility(View.VISIBLE);

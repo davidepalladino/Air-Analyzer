@@ -16,8 +16,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 public interface API {
-    String BASE_URL_LOCAL = "http://192.168.0.2:8008/";
-    String BASE_URL_REMOTE = "http://airanalyzer.servehttp.com:50208/";
+    String BASE_URL = "http://airanalyzer.servehttp.com:50208/";
 
     @POST("api/login")
     Call<Login.Response> login(@Body Login login);

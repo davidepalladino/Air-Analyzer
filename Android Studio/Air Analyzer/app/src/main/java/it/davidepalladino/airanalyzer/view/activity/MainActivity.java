@@ -36,7 +36,6 @@ import java.util.Iterator;
 
 import it.davidepalladino.airanalyzer.R;
 import it.davidepalladino.airanalyzer.control.DatabaseService;
-import it.davidepalladino.airanalyzer.model.User;
 import it.davidepalladino.airanalyzer.view.widget.Toast;
 import it.davidepalladino.airanalyzer.view.widget.ViewPagerRoom;
 import it.davidepalladino.airanalyzer.control.Setting;
@@ -50,7 +49,6 @@ import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_COD
 import static it.davidepalladino.airanalyzer.control.DatabaseService.STATUS_CODE_SERVICE;
 import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_BROADCAST;
 import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_ROOM;
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_USER;
 import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, DatePickerDialog.OnDateSetListener, ViewPager.OnPageChangeListener {
@@ -235,6 +233,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     @Override
     public void onPageScrollStateChanged(int state) {
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setEnabled(state == ViewPager.SCROLL_STATE_IDLE);
+        }
     }
 
     public void createViewPagerRoom(ArrayList<Room> listRooms) {

@@ -11,6 +11,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import it.davidepalladino.airanalyzer.BuildConfig;
 import it.davidepalladino.airanalyzer.model.Login;
 import it.davidepalladino.airanalyzer.model.MeasureAverage;
 import it.davidepalladino.airanalyzer.model.MeasureFull;
@@ -51,18 +52,8 @@ public class DatabaseService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-        String firstGroupIP = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
-
-        String baseURL;
-        if (firstGroupIP.substring(0, 3).compareTo("192") == 0 || firstGroupIP.substring(0, 2).compareTo("10") == 0) {
-            baseURL = API.BASE_URL_LOCAL;
-        } else {
-            baseURL = API.BASE_URL_REMOTE;
-        }
-
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseURL)
+                .baseUrl(API.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
