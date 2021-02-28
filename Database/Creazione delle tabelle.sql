@@ -4,7 +4,7 @@ USE airanalyzer;
 CREATE TABLE Room (
     ID INT PRIMARY KEY,
     Name VARCHAR(25),
-    IsActive BOOLEAN NOT NULL,
+    IsActive BOOLEAN NOT NULL
 );
 
 CREATE TABLE Measure (

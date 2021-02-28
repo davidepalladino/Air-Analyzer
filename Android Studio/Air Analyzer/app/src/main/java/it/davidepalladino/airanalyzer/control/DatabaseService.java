@@ -52,10 +52,22 @@ public class DatabaseService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        String localIP = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
+
+        String baseURL;
+        if (localIP.substring(0, 3).compareTo("192") == 0 || localIP.substring(0, 2).compareTo("10") == 0) {
+            baseURL = API.BASE_URL_LOCAL;
+        } else {
+            baseURL = API.BASE_URL_REMOTE;
+        }
+
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(API.BASE_URL)
+                .baseUrl(baseURL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
+
+        api = retrofit.create(API.class);
 
         api = retrofit.create(API.class);
 
