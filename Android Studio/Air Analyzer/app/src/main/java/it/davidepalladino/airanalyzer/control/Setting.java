@@ -15,7 +15,9 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class Setting {
     public static final String NAMEFILE_LOGIN = "login";
+    public static final String NAMEFILE_ROOM = "room";
     public static final String TOKEN = "token";
+    public static final String PAGE = "page";
 
     private Context context;
 
@@ -63,5 +65,16 @@ public class Setting {
         SharedPreferences loginPreference = context.getSharedPreferences(NAMEFILE_LOGIN, MODE_PRIVATE);
         SharedPreferences.Editor loginEdit = loginPreference.edit();
         loginEdit.putString(TOKEN, token).apply();
+    }
+
+    public int readRoomPage() {
+        SharedPreferences roomPreference = context.getSharedPreferences(NAMEFILE_ROOM, MODE_PRIVATE);
+        return roomPreference.getInt(PAGE, 0);
+    }
+
+    public void saveRoomPage(int page) {
+        SharedPreferences roomPreference = context.getSharedPreferences(NAMEFILE_ROOM, MODE_PRIVATE);
+        SharedPreferences.Editor roomEdit = roomPreference.edit();
+        roomEdit.putInt(PAGE, page).apply();
     }
 }
