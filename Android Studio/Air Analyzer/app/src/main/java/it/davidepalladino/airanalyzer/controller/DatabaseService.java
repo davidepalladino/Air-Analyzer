@@ -1,4 +1,4 @@
-package it.davidepalladino.airanalyzer.control;
+package it.davidepalladino.airanalyzer.controller;
 
 import android.app.Service;
 import android.content.Intent;
@@ -11,7 +11,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import it.davidepalladino.airanalyzer.BuildConfig;
 import it.davidepalladino.airanalyzer.model.Login;
 import it.davidepalladino.airanalyzer.model.MeasureAverage;
 import it.davidepalladino.airanalyzer.model.MeasureFull;
@@ -24,11 +23,11 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_BROADCAST;
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_MEASURE;
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_ROOM;
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_USER;
-import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_BROADCAST;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_MEASURE;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_ROOM;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_USER;
+import static it.davidepalladino.airanalyzer.controller.Setting.NAMEPREFERENCE_TOKEN;
 
 public class DatabaseService extends Service {
     public static final String DATABASE_SERVICE = "DATABASE_SERVICE";
@@ -94,7 +93,7 @@ public class DatabaseService extends Service {
                 intentBroadcast.putExtra(REQUEST_CODE_SERVICE, requestCodeBroadcast);
 
                 if (response.code() == 200) {
-                    intentBroadcast.putExtra(TOKEN, response.body().getToken());
+                    intentBroadcast.putExtra(NAMEPREFERENCE_TOKEN, response.body().getToken());
                 }
 
                 intentBroadcast.putExtra(STATUS_CODE_SERVICE, response.code());

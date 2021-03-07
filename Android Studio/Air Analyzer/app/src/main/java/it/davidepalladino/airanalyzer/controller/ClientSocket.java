@@ -1,4 +1,4 @@
-package it.davidepalladino.airanalyzer.control;
+package it.davidepalladino.airanalyzer.controller;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,7 +11,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_BROADCAST;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_BROADCAST;
 
 public class ClientSocket {
     public static final String REQUEST_CODE_SOCKET = "REQUEST_CODE_SOCKET";

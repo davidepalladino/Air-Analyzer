@@ -18,7 +18,7 @@
         tools:targetApi="m">
 
         <service
-            android:name=".control.DatabaseService"
+            android:name=".controller.DatabaseService"
             android:enabled="true"
             android:exported="true">
         </service>

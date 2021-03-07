@@ -29,23 +29,23 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import it.davidepalladino.airanalyzer.R;
-import it.davidepalladino.airanalyzer.control.ClientSocket;
-import it.davidepalladino.airanalyzer.control.DatabaseService;
-import it.davidepalladino.airanalyzer.control.Setting;
+import it.davidepalladino.airanalyzer.controller.ClientSocket;
+import it.davidepalladino.airanalyzer.controller.DatabaseService;
+import it.davidepalladino.airanalyzer.controller.Setting;
 import it.davidepalladino.airanalyzer.model.Room;
 import it.davidepalladino.airanalyzer.model.User;
 import it.davidepalladino.airanalyzer.view.widget.Toast;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.content.Context.WIFI_SERVICE;
-import static it.davidepalladino.airanalyzer.control.ClientSocket.ERROR_SOCKET;
-import static it.davidepalladino.airanalyzer.control.ClientSocket.MESSAGE_SOCKET;
-import static it.davidepalladino.airanalyzer.control.ClientSocket.REQUEST_CODE_SOCKET;
-import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE_SERVICE;
-import static it.davidepalladino.airanalyzer.control.DatabaseService.STATUS_CODE_SERVICE;
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_BROADCAST;
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_ROOM;
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_USER;
+import static it.davidepalladino.airanalyzer.controller.ClientSocket.ERROR_SOCKET;
+import static it.davidepalladino.airanalyzer.controller.ClientSocket.MESSAGE_SOCKET;
+import static it.davidepalladino.airanalyzer.controller.ClientSocket.REQUEST_CODE_SOCKET;
+import static it.davidepalladino.airanalyzer.controller.DatabaseService.REQUEST_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.controller.DatabaseService.STATUS_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_BROADCAST;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_ROOM;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_USER;
 
 public class AddFragment extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener {
     public static final String BROADCAST_REQUEST_CODE_MASTER = "AddFragment";

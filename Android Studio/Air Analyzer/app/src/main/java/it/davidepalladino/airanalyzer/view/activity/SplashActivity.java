@@ -13,13 +13,13 @@ import android.os.Handler;
 import android.os.IBinder;
 
 import it.davidepalladino.airanalyzer.R;
-import it.davidepalladino.airanalyzer.control.DatabaseService;
-import it.davidepalladino.airanalyzer.control.Setting;
+import it.davidepalladino.airanalyzer.controller.DatabaseService;
+import it.davidepalladino.airanalyzer.controller.Setting;
 import it.davidepalladino.airanalyzer.model.Login;
 
-import static it.davidepalladino.airanalyzer.control.DatabaseService.STATUS_CODE_SERVICE;
-import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
-import static it.davidepalladino.airanalyzer.control.IntentConst.*;
+import static it.davidepalladino.airanalyzer.controller.DatabaseService.STATUS_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.controller.Setting.NAMEPREFERENCE_TOKEN;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.*;
 
 public class SplashActivity extends AppCompatActivity {
     private static final String BROADCAST_REQUEST_CODE_MASTER = "SplashActivity";
@@ -90,7 +90,7 @@ public class SplashActivity extends AppCompatActivity {
                         switch (statusCode) {
                             case 200:
                                 intentTo = new Intent(SplashActivity.this, MainActivity.class);
-                                setting.saveToken(intentFrom.getStringExtra(TOKEN));
+                                setting.saveToken(intentFrom.getStringExtra(NAMEPREFERENCE_TOKEN));
 
                                 break;
                             case 204:

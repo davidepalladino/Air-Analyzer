@@ -20,17 +20,17 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import it.davidepalladino.airanalyzer.R;
-import it.davidepalladino.airanalyzer.control.DatabaseService;
-import it.davidepalladino.airanalyzer.control.Setting;
+import it.davidepalladino.airanalyzer.controller.DatabaseService;
+import it.davidepalladino.airanalyzer.controller.Setting;
 import it.davidepalladino.airanalyzer.view.widget.TextWatcherField;
 import it.davidepalladino.airanalyzer.model.Signup;
 import it.davidepalladino.airanalyzer.view.dialog.SignupDialog;
 import it.davidepalladino.airanalyzer.view.widget.Toast;
 
-import static it.davidepalladino.airanalyzer.control.CheckField.*;
-import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE_SERVICE;
-import static it.davidepalladino.airanalyzer.control.DatabaseService.STATUS_CODE_SERVICE;
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_BROADCAST;
+import static it.davidepalladino.airanalyzer.controller.CheckField.*;
+import static it.davidepalladino.airanalyzer.controller.DatabaseService.REQUEST_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.controller.DatabaseService.STATUS_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_BROADCAST;
 
 public class SignupActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, TextWatcherField.AuthTextWatcherCallback {
     private static final String BROADCAST_REQUEST_CODE_MASTER = "SignupActivity";
