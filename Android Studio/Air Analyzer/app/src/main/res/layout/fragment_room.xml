@@ -89,7 +89,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <com.jjoe64.graphview.GraphView
+            <com.github.mikephil.charting.charts.BarChart
                 android:id="@+id/graphTemperature"
                 android:layout_width="match_parent"
                 android:layout_height="150dp" />
@@ -138,7 +138,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <com.jjoe64.graphview.GraphView
+            <com.github.mikephil.charting.charts.BarChart
                 android:id="@+id/graphHumidity"
                 android:layout_width="match_parent"
                 android:layout_height="150dp" />

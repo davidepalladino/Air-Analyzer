@@ -1,3 +1,17 @@
+ /**
+  * This software allows to manage the hardware of "Air Analyzer". Specifically, you can read the values about temperature and humidity, 
+  *  storing them into database for extern analysis.
+  * Copyright (c) 2020 Davide Palladino. 
+  * All right reserved.
+  * 
+  * @author Davide Palladino
+  * @contact me@davidepalladino.com
+  * @website www.davidepalladino.com
+  * @version 1.3.0
+  * @date 9th March, 2021
+  * 
+  */
+
 #include <Arduino.h>
 
 #include <ESP8266WiFi.h>

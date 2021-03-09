@@ -1,7 +1,9 @@
 package it.davidepalladino.airanalyzer.view.activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -11,6 +13,8 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.SystemClock;
 
 import it.davidepalladino.airanalyzer.R;
 import it.davidepalladino.airanalyzer.controller.DatabaseService;
@@ -23,6 +27,8 @@ import static it.davidepalladino.airanalyzer.controller.IntentConst.*;
 
 public class SplashActivity extends AppCompatActivity {
     private static final String BROADCAST_REQUEST_CODE_MASTER = "SplashActivity";
+    private static final int TIMEOUT_MESSAGE_GO_LOGIN = 5000;
+    private static final int MESSAGE_GO_LOGIN = 1;
 
     private Setting setting;
 
@@ -66,15 +72,35 @@ public class SplashActivity extends AppCompatActivity {
             Login login = setting.readLogin();
             if (login != null) {
                 databaseService.login(login, BROADCAST_REQUEST_CODE_MASTER);
+
+                Message messageHandlerGoLogin = new Message();
+                messageHandlerGoLogin.what = MESSAGE_GO_LOGIN;
+
+                handlerTimeout.sendMessageAtTime(messageHandlerGoLogin, SystemClock.uptimeMillis() + TIMEOUT_MESSAGE_GO_LOGIN);
             } else {
-                Intent intentTo = new Intent(SplashActivity.this, LoginActivity.class);
-                startActivity(intentTo);
-                finish();
+                goToLogin();
             }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+        }
+    };
+
+    private void goToLogin() {
+        Intent intentTo = new Intent(SplashActivity.this, LoginActivity.class);
+        startActivity(intentTo);
+        finish();
+    }
+
+    @SuppressLint("HandlerLeak")
+    private Handler handlerTimeout = new Handler() {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            switch (msg.what) {
+                case MESSAGE_GO_LOGIN:
+                    goToLogin();
+            }
         }
     };
 
@@ -85,6 +111,7 @@ public class SplashActivity extends AppCompatActivity {
                 if (intentFrom.hasExtra(DatabaseService.REQUEST_CODE_SERVICE) && intentFrom.hasExtra(STATUS_CODE_SERVICE)) {
                     if (intentFrom.getStringExtra(DatabaseService.REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER) == 0) {
                         Intent intentTo = null;
+                        handlerTimeout.removeMessages(MESSAGE_GO_LOGIN);
 
                         int statusCode = intentFrom.getIntExtra(STATUS_CODE_SERVICE, 0);
                         switch (statusCode) {
