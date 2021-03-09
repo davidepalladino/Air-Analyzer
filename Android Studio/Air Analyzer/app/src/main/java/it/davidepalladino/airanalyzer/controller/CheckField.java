@@ -1,4 +1,4 @@
-package it.davidepalladino.airanalyzer.control;
+package it.davidepalladino.airanalyzer.controller;
 
 import android.widget.EditText;
 

@@ -16,17 +16,17 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import it.davidepalladino.airanalyzer.R;
-import it.davidepalladino.airanalyzer.control.DatabaseService;
-import it.davidepalladino.airanalyzer.control.Setting;
+import it.davidepalladino.airanalyzer.controller.DatabaseService;
+import it.davidepalladino.airanalyzer.controller.Setting;
 import it.davidepalladino.airanalyzer.view.widget.TextWatcherField;
 import it.davidepalladino.airanalyzer.model.Login;
 import it.davidepalladino.airanalyzer.view.widget.Toast;
 
-import static it.davidepalladino.airanalyzer.control.CheckField.*;
-import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE_SERVICE;
-import static it.davidepalladino.airanalyzer.control.DatabaseService.STATUS_CODE_SERVICE;
-import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
-import static it.davidepalladino.airanalyzer.control.IntentConst.*;
+import static it.davidepalladino.airanalyzer.controller.CheckField.*;
+import static it.davidepalladino.airanalyzer.controller.DatabaseService.REQUEST_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.controller.DatabaseService.STATUS_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.controller.Setting.NAMEPREFERENCE_TOKEN;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.*;
 
 public class LoginActivity extends AppCompatActivity implements TextWatcherField.AuthTextWatcherCallback, View.OnClickListener {
     private static final String BROADCAST_REQUEST_CODE_MASTER = "LoginActivity";
@@ -198,7 +198,7 @@ public class LoginActivity extends AppCompatActivity implements TextWatcherField
                     int statusCode = intentFrom.getIntExtra(STATUS_CODE_SERVICE, 0);
                     switch (statusCode) {
                         case 200:
-                            setting.saveToken(intentFrom.getStringExtra(TOKEN));
+                            setting.saveToken(intentFrom.getStringExtra(NAMEPREFERENCE_TOKEN));
 
                             Intent intentTo = new Intent(LoginActivity.this, MainActivity.class);
                             startActivity(intentTo);

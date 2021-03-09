@@ -35,21 +35,21 @@ import java.util.Calendar;
 import java.util.Iterator;
 
 import it.davidepalladino.airanalyzer.R;
-import it.davidepalladino.airanalyzer.control.DatabaseService;
+import it.davidepalladino.airanalyzer.controller.DatabaseService;
 import it.davidepalladino.airanalyzer.view.widget.Toast;
 import it.davidepalladino.airanalyzer.view.widget.ViewPagerRoom;
-import it.davidepalladino.airanalyzer.control.Setting;
+import it.davidepalladino.airanalyzer.controller.Setting;
 import it.davidepalladino.airanalyzer.model.Room;
 import it.davidepalladino.airanalyzer.view.dialog.RemoveRoomDialog;
 import it.davidepalladino.airanalyzer.view.dialog.RenameRoomDialog;
 import it.davidepalladino.airanalyzer.view.fragment.AddFragment;
 import it.davidepalladino.airanalyzer.view.fragment.RoomFragment;
 
-import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE_SERVICE;
-import static it.davidepalladino.airanalyzer.control.DatabaseService.STATUS_CODE_SERVICE;
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_BROADCAST;
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_ROOM;
-import static it.davidepalladino.airanalyzer.control.Setting.TOKEN;
+import static it.davidepalladino.airanalyzer.controller.DatabaseService.REQUEST_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.controller.DatabaseService.STATUS_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_BROADCAST;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_ROOM;
+import static it.davidepalladino.airanalyzer.controller.Setting.NAMEPREFERENCE_TOKEN;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, DatePickerDialog.OnDateSetListener, ViewPager.OnPageChangeListener {
     public static final String BROADCAST_REQUEST_CODE_MASTER = "MainActivity";
@@ -379,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                             // LOGIN BROADCAST
                             } else if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_LOGIN) == 0) {
-                                setting.saveToken(intentFrom.getStringExtra(TOKEN));
+                                setting.saveToken(intentFrom.getStringExtra(NAMEPREFERENCE_TOKEN));
                                 attemptsLogin = 1;
                             }
 

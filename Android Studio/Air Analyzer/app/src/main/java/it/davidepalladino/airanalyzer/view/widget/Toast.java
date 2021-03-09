@@ -65,7 +65,7 @@ public class Toast {
         textViewMeasureValue.setText(MeasureValue);
 
         android.widget.Toast toast = new android.widget.Toast(activity);
-        toast.setDuration(android.widget.Toast.LENGTH_LONG);
+        toast.setDuration(android.widget.Toast.LENGTH_SHORT);
         toast.setView(layout);
         toast.show();
     }

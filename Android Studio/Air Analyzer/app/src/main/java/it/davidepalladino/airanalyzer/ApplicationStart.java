@@ -3,7 +3,7 @@ package it.davidepalladino.airanalyzer;
 import android.app.Application;
 import android.content.Intent;
 
-import it.davidepalladino.airanalyzer.control.DatabaseService;
+import it.davidepalladino.airanalyzer.controller.DatabaseService;
 
 public class ApplicationStart extends Application {
     @Override

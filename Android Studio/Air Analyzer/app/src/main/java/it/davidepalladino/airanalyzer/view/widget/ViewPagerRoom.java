@@ -8,7 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.viewpager.widget.ViewPager;
 
-import com.jjoe64.graphview.GraphView;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
 
 public class ViewPagerRoom extends ViewPager {
     public ViewPagerRoom(@NonNull Context context) {
@@ -21,7 +22,7 @@ public class ViewPagerRoom extends ViewPager {
 
     @Override
     protected boolean canScroll(View v, boolean checkV, int dx, int x, int y) {
-        if (v instanceof GraphView) {
+        if (v instanceof BarChart) {
             return true;
         }
 

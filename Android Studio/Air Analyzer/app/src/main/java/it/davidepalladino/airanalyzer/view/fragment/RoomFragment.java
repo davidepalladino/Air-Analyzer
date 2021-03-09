@@ -16,21 +16,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.jjoe64.graphview.DefaultLabelFormatter;
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.BarGraphSeries;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.DataPointInterface;
-import com.jjoe64.graphview.series.OnDataPointTapListener;
-import com.jjoe64.graphview.series.Series;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import it.davidepalladino.airanalyzer.R;
-import it.davidepalladino.airanalyzer.control.DatabaseService;
-import it.davidepalladino.airanalyzer.control.Setting;
+import it.davidepalladino.airanalyzer.controller.DatabaseService;
+import it.davidepalladino.airanalyzer.controller.Setting;
 import it.davidepalladino.airanalyzer.model.MeasureAverage;
 import it.davidepalladino.airanalyzer.model.MeasureFull;
 import it.davidepalladino.airanalyzer.model.Room;
@@ -39,9 +42,9 @@ import it.davidepalladino.airanalyzer.view.widget.Toast;
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.graphics.Typeface.ITALIC;
 import static android.graphics.Typeface.NORMAL;
-import static it.davidepalladino.airanalyzer.control.DatabaseService.REQUEST_CODE_SERVICE;
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_BROADCAST;
-import static it.davidepalladino.airanalyzer.control.IntentConst.INTENT_MEASURE;
+import static it.davidepalladino.airanalyzer.controller.DatabaseService.REQUEST_CODE_SERVICE;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_BROADCAST;
+import static it.davidepalladino.airanalyzer.controller.IntentConst.INTENT_MEASURE;
 
 public class RoomFragment extends Fragment {
     private static final String BROADCAST_REQUEST_CODE_MASTER = "RoomFragment";
@@ -50,8 +53,8 @@ public class RoomFragment extends Fragment {
     public static final String BUNDLE_ROOM = "ROOM";
     public static final String BUNDLE_DATE_RAW = "DATE_RAW";
 
-    private GraphView graphTemperature;
-    private GraphView graphHumidity;
+    private BarChart graphTemperature;
+    private BarChart graphHumidity;
 
     private TextView textViewDate;
     private TextView textViewLatestTemperature;
@@ -66,11 +69,6 @@ public class RoomFragment extends Fragment {
     private Calendar calendarSelected;
     private MeasureFull lastMeasureDate;
     private ArrayList<MeasureAverage> listMeasuresDateAverage;
-
-    private float minAverageTemperatureGraph = 100;
-    private float maxAverageTemperatureGraph = 0;
-    private float minAverageHumidityGraph = 100;
-    private float maxAverageHumidityGraph = 0;
 
     public static RoomFragment newInstance(Room room, Long dateRaw) {
         RoomFragment fragment = new RoomFragment();
@@ -122,8 +120,8 @@ public class RoomFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View layoutFragment = inflater.inflate(R.layout.fragment_room, container, false);
 
-        graphTemperature = (GraphView) layoutFragment.findViewById(R.id.graphTemperature);
-        graphHumidity = (GraphView) layoutFragment.findViewById(R.id.graphHumidity);
+        graphTemperature = (BarChart) layoutFragment.findViewById(R.id.graphTemperature);
+        graphHumidity = (BarChart) layoutFragment.findViewById(R.id.graphHumidity);
 
         textViewDate = (TextView) layoutFragment.findViewById(R.id.textViewDate);
         textViewLatestTemperature = (TextView) layoutFragment.findViewById(R.id.textViewLatestTemperature);
@@ -131,6 +129,9 @@ public class RoomFragment extends Fragment {
         textViewLatestTime = (TextView) layoutFragment.findViewById(R.id.textViewLatestTime);
         textViewNoticeTemperatureGraph = (TextView) layoutFragment.findViewById(R.id.textViewNoticeTemperatureGraph);
         textViewNoticeHumidityGraph = (TextView) layoutFragment.findViewById(R.id.textViewNoticeHumidityGraph);
+
+        graphTemperature.setNoDataText("");
+        graphHumidity.setNoDataText("");
 
         textViewDate.setText(getFormattedDate(calendarSelected));
 
@@ -146,96 +147,91 @@ public class RoomFragment extends Fragment {
 
     private void generateBarGraph(ArrayList<MeasureAverage> listMeasures) {
         /* Temeperature */
-        DataPoint[] dataPointsTemperature = new DataPoint[listMeasures.size()];
-        for (int m = 0; m < listMeasures.size(); m++) {
-            dataPointsTemperature[m] = new DataPoint(Integer.parseInt(listMeasures.get(m).getHour()), listMeasures.get(m).getTemperature());
-
-            if (listMeasures.get(m).getTemperature() > maxAverageTemperatureGraph) {
-                maxAverageTemperatureGraph = listMeasures.get(m).getTemperature();
-            }
-
-            if (listMeasures.get(m).getTemperature() < minAverageTemperatureGraph) {
-                minAverageTemperatureGraph = listMeasures.get(m).getTemperature();
-            }
+        List<BarEntry> measuresTemperature = new ArrayList<BarEntry>();
+        for (MeasureAverage measure : listMeasures) {
+            measuresTemperature.add(new BarEntry(Integer.parseInt(measure.getHour()), measure.getTemperature()));
         }
 
-        BarGraphSeries<DataPoint> seriesTemperature = new BarGraphSeries<DataPoint>(dataPointsTemperature);
-        seriesTemperature.setOnDataPointTapListener(new OnDataPointTapListener() {
+        BarDataSet dataSetTemperature = new BarDataSet(measuresTemperature, "Temperature");
+        dataSetTemperature.setColor(getResources().getColor(R.color.primaryColor));
+        dataSetTemperature.setDrawValues(false);
+
+        graphTemperature.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override
-            public void onTap(Series series, DataPointInterface dataPoint) {
+            public void onValueSelected(Entry e, Highlight h) {
                 toast.makeToastBlueMeasure(
                         R.drawable.ic_outline_info_24_toast,
                         getString(R.string.time),
-                        String.format("%.0f:00", dataPoint.getX()),
+                        String.format("%02.0f:00", e.getX()),
                         getString(R.string.temperature),
-                        String.format("%.2f", dataPoint.getY()) + " °C"
+                        String.format("%.2f", e.getY()) + " °C"
                 );
+            }
+
+            @Override
+            public void onNothingSelected() {
+
             }
         });
 
-        drawBarGraph(graphTemperature, seriesTemperature, minAverageTemperatureGraph, maxAverageTemperatureGraph, " °C");
+        drawBarGraph(graphTemperature, new BarData((dataSetTemperature)));
 
         /* Humidity */
-        DataPoint[] dataPointsHumidity = new DataPoint[listMeasures.size()];
-        for (int m = 0; m < listMeasures.size(); m++) {
-            dataPointsHumidity[m] = new DataPoint(Integer.parseInt(listMeasures.get(m).getHour()), listMeasures.get(m).getHumidity());
-
-            if (listMeasures.get(m).getHumidity() > maxAverageHumidityGraph) {
-                maxAverageHumidityGraph = listMeasures.get(m).getHumidity();
-            }
-
-            if (listMeasures.get(m).getHumidity() < minAverageHumidityGraph) {
-                minAverageHumidityGraph = listMeasures.get(m).getHumidity();
-            }
+        List<BarEntry> measuresHumidity = new ArrayList<BarEntry>();
+        for (MeasureAverage measure : listMeasures) {
+            measuresHumidity.add(new BarEntry(Integer.parseInt(measure.getHour()), measure.getHumidity()));
         }
-        BarGraphSeries<DataPoint> seriesHumidity = new BarGraphSeries<DataPoint>(dataPointsHumidity);
-        seriesHumidity.setOnDataPointTapListener(new OnDataPointTapListener() {
+
+        BarDataSet dataSetHumidity = new BarDataSet(measuresHumidity, "Humidity");
+        dataSetHumidity.setColor(getResources().getColor(R.color.primaryColor));
+        dataSetHumidity.setDrawValues(false);
+
+        graphHumidity.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override
-            public void onTap(Series series, DataPointInterface dataPoint) {
+            public void onValueSelected(Entry e, Highlight h) {
                 toast.makeToastBlueMeasure(
                         R.drawable.ic_outline_info_24_toast,
                         getString(R.string.time),
-                        String.format("%.0f:00", dataPoint.getX()),
-                        getString(R.string.humidity),
-                        String.format("%.2f", dataPoint.getY()) + " %"
+                        String.format("%02.0f:00", e.getX()),
+                        getString(R.string.temperature),
+                        String.format("%.2f", e.getY()) + " %"
                 );
+            }
+
+            @Override
+            public void onNothingSelected() {
+
             }
         });
 
-        drawBarGraph(graphHumidity, seriesHumidity, minAverageHumidityGraph, maxAverageHumidityGraph, " %");
+        drawBarGraph(graphHumidity, new BarData((dataSetHumidity)));
     }
 
-    private void drawBarGraph(GraphView graph, BarGraphSeries<DataPoint> series, float yMinValue, float yMaxValue, String yStringValue) {
-        series.setSpacing(30);
+    private void drawBarGraph(BarChart graph, BarData data) {
+        graph.setData(data);
 
-        graph.addSeries(series);
+        graph.setHighlightPerDragEnabled(false);
+        graph.getLegend().setEnabled(false);
+        graph.getDescription().setEnabled(false);
 
-        graph.getViewport().setScalable(true);
-        graph.getViewport().setScalableY(false);
+        graph.animateY(500);
 
-        graph.getViewport().setScrollable(true);
-        graph.getViewport().setScrollableY(false);
-
-        graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(23);
-        graph.getViewport().setXAxisBoundsManual(true);
-
-        graph.getViewport().setMinY(yMinValue - 1);
-        graph.getViewport().setMaxY(yMaxValue + 1);
-        graph.getViewport().setYAxisBoundsManual(true);
-
-        graph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+        graph.getXAxis().setGranularityEnabled(true);
+        graph.getXAxis().setGranularity(1);
+        graph.getXAxis().setAxisMinimum(-1);
+        graph.getXAxis().setAxisMaximum(24);
+        graph.getXAxis().setValueFormatter(new ValueFormatter() {
             @Override
-            public String formatLabel(double value, boolean isValueX) {
-                if (isValueX) {
-                    // X value
-                    return super.formatLabel(value, isValueX) + ":00";
+            public String getAxisLabel(float value, AxisBase axis) {
+                if (value != -1 && value != 24) {
+                    return String.format("%02.0f:00", value);
                 } else {
-                    // Y value
-                    return super.formatLabel(value, isValueX) + yStringValue;
+                    return "";
                 }
             }
         });
+
+        graph.invalidate();
     }
 
     public DatabaseService databaseService;
@@ -284,29 +280,14 @@ public class RoomFragment extends Fragment {
                             // GET DATE AVERAGE BROADCAST
                             } else if (intentFrom.getStringExtra(REQUEST_CODE_SERVICE).compareTo(BROADCAST_REQUEST_CODE_MASTER + BROADCAST_REQUEST_CODE_EXTENSION_GET_DATE_AVERAGE + room.getId()) == 0) {
                                 listMeasuresDateAverage = intentFrom.getParcelableArrayListExtra(INTENT_MEASURE);
-                                if (listMeasuresDateAverage.size() == 1) {
-                                    graphTemperature.setVisibility(View.GONE);
-                                    graphHumidity.setVisibility(View.GONE);
 
-                                    int nextHour = Integer.parseInt(listMeasuresDateAverage.get(0).getHour()) + 1;
-                                    if (nextHour > 23) {
-                                        nextHour = 0;
-                                    }
+                                graphTemperature.setVisibility(View.VISIBLE);
+                                graphHumidity.setVisibility(View.VISIBLE);
 
-                                    textViewNoticeTemperatureGraph.setVisibility(View.VISIBLE);
+                                textViewNoticeTemperatureGraph.setVisibility(View.GONE);
+                                textViewNoticeHumidityGraph.setVisibility(View.GONE);
 
-                                    textViewNoticeTemperatureGraph.setText(getString(R.string.noticeGraphTryAgain) + String.valueOf(nextHour) + ":00");
-                                    textViewNoticeHumidityGraph.setVisibility(View.VISIBLE);
-                                    textViewNoticeHumidityGraph.setText(getString(R.string.noticeGraphTryAgain) + String.valueOf(nextHour) + ":00");
-                                } else {
-                                    graphTemperature.setVisibility(View.VISIBLE);
-                                    graphHumidity.setVisibility(View.VISIBLE);
-
-                                    textViewNoticeTemperatureGraph.setVisibility(View.GONE);
-                                    textViewNoticeHumidityGraph.setVisibility(View.GONE);
-
-                                    generateBarGraph(listMeasuresDateAverage);
-                                }
+                                generateBarGraph(listMeasuresDateAverage);
                             }
 
                             break;
